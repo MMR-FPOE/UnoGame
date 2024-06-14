@@ -35,7 +35,7 @@
    <top>
       <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fx:id="unoImageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="unoImageView" fitHeight="68.0" fitWidth="89.0" pickOnBounds="true" preserveRatio="true" />
             <GridPane fx:id="gridPaneCardsMachine">
               <columnConstraints>
                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -47,7 +47,7 @@
                   <RowConstraints />
                </rowConstraints>
             </GridPane>
-            <Button mnemonicParsing="false" text="Salir" />
+            <Button mnemonicParsing="false" onAction="#onHandleQuitGame" text="Salir" />
          </children>
       </HBox>
    </top>

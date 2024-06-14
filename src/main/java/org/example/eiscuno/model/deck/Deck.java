@@ -30,7 +30,7 @@ public class Deck {
                     cardEnum.name().startsWith("BLUE_") ||
                     cardEnum.name().startsWith("RED_") ||
                     cardEnum.name().startsWith("SKIP_") ||
-                    cardEnum.name().startsWith("RESERVE_") ||
+                    cardEnum.name().startsWith("REVERSE_") ||
                     cardEnum.name().startsWith("TWO_WILD_DRAW_") ||
                     cardEnum.name().equals("FOUR_WILD_DRAW") ||
                     cardEnum.name().equals("WILD")) {
@@ -63,6 +63,17 @@ public class Deck {
         } else if (name.endsWith("9")){
             return "9";
         } else {
+            if (name.startsWith("REVERSE_")){
+                return "REVERSE_";
+            } else if (name.startsWith("TWO_WILD_DRAW_")){
+                return "TWO_WILD_DRAW_";
+            } else if (name.equals("FOUR_WILD_DRAW")){
+                return "FOUR_WILD_DRAW";
+            } else if (name.equals("WILD")){
+                return "WILD";
+            } else if (name.startsWith("SKIP_")){
+                return "SKIP_";
+            }
             return null;
         }
 
@@ -77,10 +88,21 @@ public class Deck {
             return "BLUE";
         } else if(name.startsWith("RED")){
             return "RED";
-        } else {
+        }else{
+            if (name.contains("GREEN")){
+                return "GREEN";
+            } else if (name.contains("YELLOW")){
+                return "YELLOW";
+            } else if (name.contains("BLUE")){
+                return "BLUE";
+            } else if (name.contains("RED")){
+                return "RED";
+            }
             return null;
         }
+
     }
+
 
     /**
      * Takes a card from the top of the deck.

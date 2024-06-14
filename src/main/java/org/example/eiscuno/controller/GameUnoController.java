@@ -14,6 +14,11 @@ import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
+import org.example.eiscuno.view.GameUnoStage;
+import org.example.eiscuno.view.alert.AlertBox;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controller class for the Uno game.
@@ -81,24 +86,95 @@ public class GameUnoController {
      * Prints the human player's cards on the grid pane.
      */
     private void printCardsHumanPlayer() {
+        AtomicBoolean isPlayable = new AtomicBoolean(false);
         this.gridPaneCardsPlayer.getChildren().clear();
         Card[] currentVisibleCardsHumanPlayer = this.gameUno.getCurrentVisibleCardsHumanPlayer(this.posInitCardToShow);
 
-        for (int i = 0; i < currentVisibleCardsHumanPlayer.length; i++) {
-            Card card = currentVisibleCardsHumanPlayer[i];
-            ImageView cardImageView = card.getCard();
+            for (int i = 0; i < currentVisibleCardsHumanPlayer.length; i++) {
+                Card card = currentVisibleCardsHumanPlayer[i];
+                ImageView cardImageView = card.getCard();
 
-            cardImageView.setOnMouseClicked((MouseEvent event) -> {
-                // Aqui deberian verificar si pueden en la tabla jugar esa carta
-                gameUno.playCard(card);
-                tableImageView.setImage(card.getImage());
-                humanPlayer.removeCard(findPosCardsHumanPlayer(card));
+                cardImageView.setOnMouseClicked((MouseEvent event) -> {
+                    // Aqui deberian verificar si pueden en la tabla jugar esa carta
+                    if (tableImageView.getImage() != null && !humanHasBeenBlocked()) {
+                        if (especialCases()) {
+                            if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                                isPlayable.set(true);
+                            } else if (card.getValue().equals("FOUR_WILD_DRAW")) {
+                                isPlayable.set(true);
+                            }
+                        } else if (card.getValue().equals("WILD")) {
+                            wildCard();
+                            isPlayable.set(true);
+                        } else if (checkColor(card)) {
+                            if (card.getValue().startsWith("SKIP_")){
+                                machineBlocked();
+                            }else {
+                                isPlayable.set(true);
+                            }
+                        } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                            isPlayable.set(true);
+                        }
+                        if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
+                            if (card.getValue().equals("TWO_WILD_DRAW_")) {
+                                if (table.getCurrentCardOnTheTable().getColor().equals(card.getColor())){
+                                    isPlayable.set(true);
+                                }
+                            } else if (!Objects.equals(card.getValue(), "TWO_WILD_DRAW_")) {
+                                isPlayable.set(true);
+                            }
+                        }
+                    }
+                    if (isPlayable.get() || tableImageView.getImage() == null) {
+                        gameUno.playCard(card);
+                        tableImageView.setImage(card.getImage());
+                        humanPlayer.removeCard(findPosCardsHumanPlayer(card));
+                        threadPlayMachine.setHasPlayerPlayed(true);
+                        printCardsHumanPlayer();
+                    }
+                });
+                this.gridPaneCardsPlayer.add(cardImageView, i, 0);
+
+                }
+    }
+    private boolean humanHasBeenBlocked(){
+
+        if (tableImageView.getImage() != null){
+            if (table.getCurrentCardOnTheTable().getValue().startsWith("SKIP_")) {
+                //cede el turno a la máquina
+                System.out.println("human blocked");
                 threadPlayMachine.setHasPlayerPlayed(true);
-                printCardsHumanPlayer();
-            });
-
-            this.gridPaneCardsPlayer.add(cardImageView, i, 0);
+                return true;
+            }
         }
+        return false;
+    }
+
+    private boolean especialCases(){
+        if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
+            System.out.println("+4 o +2 case");
+            return true;
+        }
+        return false;
+    }
+
+    private void machineBlocked(){
+        threadPlayMachine.setHasPlayerPlayed(false);
+    }
+    private void wildCard(){
+        //threadPlayMachine.sleepThread();
+        new AlertBox().chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "Rojo, verde, azul y amarillo");
+    }
+
+    private boolean checkColor(Card card){
+        try {
+            if (table.getCurrentCardOnTheTable().getColor().equals(card.getColor())) {
+                return true;
+            }
+        }catch (NullPointerException e){
+            e.getMessage();
+        }
+        return false;
     }
 
     /**
@@ -161,4 +237,10 @@ public class GameUnoController {
     void onHandleUno(ActionEvent event) {
         // Implement logic to handle Uno event here
     }
+
+    @FXML
+    void onHandleQuitGame(ActionEvent event) {
+        GameUnoStage.deleteInstance();
+    }
+
 }
