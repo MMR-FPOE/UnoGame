@@ -32,12 +32,33 @@ public class AlertBox implements IAlertBox{
         }*/
     }
 
-    public boolean chooseColor(String title, String header, String content){
+    public void chooseColor(String title, String header, String content){
+
+        String color = "";
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        return true;
+
+        ButtonType amarillo = new ButtonType("Amarillo");
+        ButtonType rojo = new ButtonType("Rojo");
+        ButtonType verde = new ButtonType("Verde");
+        ButtonType azul = new ButtonType("Azul");
+
+        alert.getButtonTypes().setAll(amarillo, rojo, verde, azul);
+
+        ButtonType response = alert.showAndWait().orElse(ButtonType.CANCEL);
+
+        if (response == amarillo){
+            color = "Amarillo";
+        } else if (response == rojo) {
+            color = "Rojo";
+        }else if (response == verde){
+            color = "Verde";
+        }else if (response == azul){
+            color = "Azul";
+        }
+
     }
 
 }

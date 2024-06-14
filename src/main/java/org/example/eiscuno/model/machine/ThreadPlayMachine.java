@@ -13,6 +13,8 @@ public class ThreadPlayMachine extends Thread {
     private ImageView tableImageView;
     private volatile boolean hasPlayerPlayed;
     private volatile boolean haveBeenBlocked;
+    private volatile boolean isPaused;
+
 
     public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView) {
         this.table = table;
@@ -32,6 +34,7 @@ public class ThreadPlayMachine extends Thread {
                 }
                 // Aqui iria la logica de colocar la carta
                 putCardOnTheTable();
+                hasPlayerPlayed = false;
             }
         }
     }
@@ -41,17 +44,65 @@ public class ThreadPlayMachine extends Thread {
         machinePlayer.removeCard(findPosCardsMachinePlayer(card));
         tableImageView.setImage(card.getImage());
     }
+
+    public boolean searchWild(){
+        boolean isWild = false;
+        for (Card wildCard : machinePlayer.getCardsPlayer()) {
+            if (wildCard.getValue().equals("FOUR_WILD_DRAW") || wildCard    .getValue().startsWith("TWO_WILD_DRAW_")) {
+                takeACard(wildCard);
+                isWild = true;
+                break;
+
+            }
+        }
+        return isWild;
+    }
     private void putCardOnTheTable(){
+        AtomicBoolean isPlayable = new AtomicBoolean(false);
 
         if(!machinePlayer.getCardsPlayer().isEmpty() && !machineHasBeenBlocked()) {
-            int index = (int) (Math.random() * machinePlayer.getCardsPlayer().size());
-            Card card = machinePlayer.getCard(index);
+            while (!isPlayable.get()) {
+                int index = (int) (Math.random() * machinePlayer.getCardsPlayer().size());
+                Card card = machinePlayer.getCard(index);
 
-            table.addCardOnTheTable(card);
-            machinePlayer.removeCard(findPosCardsMachinePlayer(card));
-            tableImageView.setImage(card.getImage());
+                if(specialCases()){
+
+                } else if (checkColor(card)) {
+                    System.out.println("nef");
+                    isPlayable.set(true);
+                    System.out.println("color, maquina");
+                } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                    isPlayable.set(true);
+                } else {
+                    if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
+                        isPlayable.set(true);
+                    }
+                }
+                if (isPlayable.get()) {
+                    table.addCardOnTheTable(card);
+                    machinePlayer.removeCard(findPosCardsMachinePlayer(card));
+                    tableImageView.setImage(card.getImage());
+                }
+            }}else{
+            //machine has blocked or has no cards
+        }
+
+    }
+    public void pauseThread() {
+        try {
+            while(isPaused) {
+                wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
+    synchronized public void reload()
+    {
+        System.out.println("the thread using notify()");
+        notify();
+    }
+
     private boolean checkColor(Card card){
         try {
             if (table.getCurrentCardOnTheTable().getColor().equals(card.getColor())) {
@@ -63,7 +114,11 @@ public class ThreadPlayMachine extends Thread {
         return false;
     }
 
-    private boolean especialCases(){
+    public void setPaused(boolean paused) {
+        isPaused = paused;
+    }
+
+    private boolean specialCases(){
         if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
             System.out.println("+4 o +2 case");
             return true;
@@ -87,6 +142,10 @@ public class ThreadPlayMachine extends Thread {
 
     public void setHaveBeenBlocked(boolean haveBeenBlocked) {
         this.haveBeenBlocked = haveBeenBlocked;
+    }
+
+    public boolean getHasPlayerPlayed(){
+        return this.hasPlayerPlayed;
     }
 
     private Integer findPosCardsMachinePlayer(Card card) {

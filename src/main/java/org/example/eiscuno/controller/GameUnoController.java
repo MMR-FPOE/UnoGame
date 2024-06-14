@@ -97,27 +97,26 @@ public class GameUnoController {
                 cardImageView.setOnMouseClicked((MouseEvent event) -> {
                     // Aqui deberian verificar si pueden en la tabla jugar esa carta
                     if (tableImageView.getImage() != null && !humanHasBeenBlocked()) {
-                        if (especialCases()) {
+                        if (specialCases()) {
                             if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
                                 isPlayable.set(true);
                             } else if (card.getValue().equals("FOUR_WILD_DRAW")) {
                                 isPlayable.set(true);
                             }
                         } else if (card.getValue().equals("WILD")) {
-                            wildCard();
+                            changeColor();
                             isPlayable.set(true);
                         } else if (checkColor(card)) {
                             if (card.getValue().startsWith("SKIP_")){
                                 machineBlocked();
-                            }else {
+                            }else{
                                 isPlayable.set(true);
                             }
                         } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
                             isPlayable.set(true);
-                        }
-                        if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
+                        }else if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
                             if (card.getValue().equals("TWO_WILD_DRAW_")) {
-                                if (table.getCurrentCardOnTheTable().getColor().equals(card.getColor())){
+                                if (checkColor(card)){
                                     isPlayable.set(true);
                                 }
                             } else if (!Objects.equals(card.getValue(), "TWO_WILD_DRAW_")) {
@@ -141,16 +140,17 @@ public class GameUnoController {
 
         if (tableImageView.getImage() != null){
             if (table.getCurrentCardOnTheTable().getValue().startsWith("SKIP_")) {
+                threadPlayMachine.setHasPlayerPlayed(true);
                 //cede el turno a la máquina
                 System.out.println("human blocked");
-                threadPlayMachine.setHasPlayerPlayed(true);
+
                 return true;
             }
         }
         return false;
     }
 
-    private boolean especialCases(){
+    private boolean specialCases(){
         if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
             System.out.println("+4 o +2 case");
             return true;
@@ -158,12 +158,39 @@ public class GameUnoController {
         return false;
     }
 
-    private void machineBlocked(){
-        threadPlayMachine.setHasPlayerPlayed(false);
+    private String CardIdentifier(){
+        if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW")) {
+            return "FOUR_WILD_DRAW";
+        } else if (table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
+            return "TWO_WILD_DRAW_";
+        }
+        return "";
     }
-    private void wildCard(){
-        //threadPlayMachine.sleepThread();
-        new AlertBox().chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "Rojo, verde, azul y amarillo");
+
+    private void machineHasToEat(){
+        int numberOfCards = 0;
+        if (specialCases()){
+            if (!threadPlayMachine.searchWild()){
+                if (CardIdentifier().equals("FOUR_WILD_DRAW")) {
+                    gameUno.eatCard(machinePlayer, 4);
+                }else{
+                    gameUno.eatCard(machinePlayer, 2);
+                }
+            }
+        }
+    }
+
+    private void machineBlocked(){
+        //threadPlayMachine.setHasPlayerPlayed(false);
+        threadPlayMachine.setPaused(true);
+        threadPlayMachine.pauseThread();
+    }
+    private void changeColor(){
+
+       // threadPlayMachine.setPaused(true);
+        //threadPlayMachine.pauseThread();
+        new AlertBox().chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
+
     }
 
     private boolean checkColor(Card card){
@@ -226,6 +253,13 @@ public class GameUnoController {
     @FXML
     void onHandleTakeCard(ActionEvent event) {
         // Implement logic to take a card here
+        if (threadPlayMachine.getHasPlayerPlayed()){
+            Card card = deck.takeCard();
+            machinePlayer.addCard(card);
+        }else{
+            Card card = deck.takeCard();
+            humanPlayer.addCard(card);
+        }
     }
 
     /**
