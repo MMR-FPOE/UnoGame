@@ -14,6 +14,7 @@ import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
+import org.example.eiscuno.view.GameUnoStage;
 
 /**
  * Controller class for the Uno game.
@@ -136,7 +137,7 @@ public class GameUnoController {
      */
     @FXML
     void onHandleNext(ActionEvent event) {
-        if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 4) {
+        if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 7) {
             this.posInitCardToShow++;
             printCardsHumanPlayer();
         }
@@ -160,5 +161,10 @@ public class GameUnoController {
     @FXML
     void onHandleUno(ActionEvent event) {
         // Implement logic to handle Uno event here
+    }
+
+    @FXML
+    void closeGame(){
+        GameUnoStage.deleteInstance();
     }
 }
