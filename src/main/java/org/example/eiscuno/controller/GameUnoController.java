@@ -44,6 +44,8 @@ public class GameUnoController {
     private GameUno gameUno;
     private int posInitCardToShow;
 
+    private String changeColor;
+
     private ThreadSingUNOMachine threadSingUNOMachine;
     private ThreadPlayMachine threadPlayMachine;
 
@@ -80,6 +82,7 @@ public class GameUnoController {
         this.table = new Table();
         this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
         this.posInitCardToShow = 0;
+        this.changeColor = "";
     }
 
     /**
@@ -98,11 +101,17 @@ public class GameUnoController {
                     // Aqui deberian verificar si pueden en la tabla jugar esa carta
                     if (tableImageView.getImage() != null && !humanHasBeenBlocked()) {
                         if (specialCases()) {
-                            if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                            if (card.getValue().startsWith("TWO_WILD_DRAW_")) {
                                 isPlayable.set(true);
+                                hasToEat(machinePlayer);
                             } else if (card.getValue().equals("FOUR_WILD_DRAW")) {
                                 isPlayable.set(true);
+                                hasToEat(machinePlayer);
+                            }else{
+                                hasToEat(humanPlayer);
                             }
+                        } else if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
+                            machineChooseColor();
                         } else if (card.getValue().equals("WILD")) {
                             changeColor();
                             isPlayable.set(true);
@@ -129,7 +138,9 @@ public class GameUnoController {
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(true);
+                        checkMachine();
                         printCardsHumanPlayer();
+
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
@@ -150,6 +161,19 @@ public class GameUnoController {
         return false;
     }
 
+    public void checkMachine(){
+        if(threadPlayMachine.machineTakeCard().get()){
+            machineTakeCard();
+            threadPlayMachine.setHasPlayerPlayed(false);
+            System.out.println(" machine takes card");
+        }
+        if (threadPlayMachine.getHasToEat()){
+            hasToEat(machinePlayer);
+            threadPlayMachine.setHasPlayerPlayed(false);
+            System.out.println("machine eats cards");
+        }
+    }
+
     private boolean specialCases(){
         if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
             System.out.println("+4 o +2 case");
@@ -167,23 +191,21 @@ public class GameUnoController {
         return "";
     }
 
-    private void machineHasToEat(){
-        int numberOfCards = 0;
+    private void hasToEat(Player player){
         if (specialCases()){
             if (!threadPlayMachine.searchWild()){
                 if (CardIdentifier().equals("FOUR_WILD_DRAW")) {
-                    gameUno.eatCard(machinePlayer, 4);
+                    gameUno.eatCard(player, 4);
                 }else{
-                    gameUno.eatCard(machinePlayer, 2);
+                    gameUno.eatCard(player, 2);
                 }
             }
         }
     }
 
     private void machineBlocked(){
-        //threadPlayMachine.setHasPlayerPlayed(false);
-        threadPlayMachine.setPaused(true);
-        threadPlayMachine.pauseThread();
+       // threadPlayMachine.setPaused(true);
+        //threadPlayMachine.pauseThread();
     }
     private void changeColor(){
 
@@ -191,6 +213,23 @@ public class GameUnoController {
         //threadPlayMachine.pauseThread();
         new AlertBox().chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
 
+
+    }
+
+    private void machineChooseColor(){
+        new AlertBox().machineChooseColor();
+    }
+
+    public void getColor(String color){
+        this.changeColor = color;
+    }
+
+    private void machineTakeCard(){
+        if (threadPlayMachine.getHasPlayerPlayed()){
+            Card card = deck.takeCard();
+            machinePlayer.addCard(card);
+            threadPlayMachine.setNoCard(false);
+        }
     }
 
     private boolean checkColor(Card card){
@@ -239,7 +278,7 @@ public class GameUnoController {
      */
     @FXML
     void onHandleNext(ActionEvent event) {
-        if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 4) {
+        if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 7) {
             this.posInitCardToShow++;
             printCardsHumanPlayer();
         }
@@ -253,13 +292,8 @@ public class GameUnoController {
     @FXML
     void onHandleTakeCard(ActionEvent event) {
         // Implement logic to take a card here
-        if (threadPlayMachine.getHasPlayerPlayed()){
-            Card card = deck.takeCard();
-            machinePlayer.addCard(card);
-        }else{
-            Card card = deck.takeCard();
-            humanPlayer.addCard(card);
-        }
+        Card card = deck.takeCard();
+        humanPlayer.addCard(card);
     }
 
     /**
@@ -273,7 +307,7 @@ public class GameUnoController {
     }
 
     @FXML
-    void onHandleQuitGame(ActionEvent event) {
+    void closeGame(ActionEvent event) {
         GameUnoStage.deleteInstance();
     }
 

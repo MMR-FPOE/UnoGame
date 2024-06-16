@@ -2,6 +2,7 @@ package org.example.eiscuno.view.alert;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import org.example.eiscuno.controller.GameUnoController;
 
 public class AlertBox implements IAlertBox{
 
@@ -58,6 +59,33 @@ public class AlertBox implements IAlertBox{
         }else if (response == azul){
             color = "Azul";
         }
+
+        GameUnoController gameUnoController = new GameUnoController();
+        gameUnoController.getColor(color);
+
+    }
+
+    public void machineChooseColor(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Cambio de Color");
+        alert.setHeaderText("La máquina eligió el color..");
+
+        int index = (int) (Math.random() * 4);
+        switch (index){
+            case 0:
+                alert.setContentText("Amarillo");
+                break;
+            case 1:
+                alert.setContentText("Rojo");
+                break;
+            case 2:
+                alert.setContentText("Azul");
+                break;
+            case 3:
+                alert.setContentText("Verde");
+                break;
+        }
+
 
     }
 
