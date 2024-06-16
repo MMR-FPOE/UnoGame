@@ -5,6 +5,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class GameUnoStage extends Stage {
         // Configuring the stage
         setTitle("EISC Uno"); // Sets the title of the stage
         EISCUnoEnum unoEnum = EISCUnoEnum.FAVICON;
+        initStyle(StageStyle.UNDECORATED);
         getIcons().add(new Image(String.valueOf(getClass().getResource(unoEnum.getFilePath()))));
         setScene(scene); // Sets the scene for the stage
         setResizable(false); // Disallows resizing of the stage

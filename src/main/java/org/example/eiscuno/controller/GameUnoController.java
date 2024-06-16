@@ -1,5 +1,6 @@
 package org.example.eiscuno.controller;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -15,6 +16,8 @@ import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
 import org.example.eiscuno.view.GameUnoStage;
+
+import java.io.IOException;
 
 /**
  * Controller class for the Uno game.
@@ -49,7 +52,7 @@ public class GameUnoController {
      * Initializes the controller.
      */
     @FXML
-    public void initialize() {
+    public void initialize(){
         initVariables();
         this.gameUno.startGame();
         printCardsHumanPlayer();
@@ -60,10 +63,6 @@ public class GameUnoController {
 
         threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView);
         threadPlayMachine.start();
-
-        unoImageView.setImage(new Image(String.valueOf(getClass().getResource(eiscUnoEnum.getFilePath()))));
-        unoImageView.setFitWidth(80);
-        unoImageView.setFitHeight(80);
     }
 
     /**
@@ -166,5 +165,6 @@ public class GameUnoController {
     @FXML
     void closeGame(){
         GameUnoStage.deleteInstance();
+        System.exit(0);
     }
 }
