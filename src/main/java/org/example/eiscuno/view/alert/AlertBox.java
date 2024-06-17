@@ -2,6 +2,7 @@ package org.example.eiscuno.view.alert;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import org.example.eiscuno.controller.GameUnoController;
 
 public class AlertBox implements IAlertBox{
 
@@ -32,12 +33,60 @@ public class AlertBox implements IAlertBox{
         }*/
     }
 
-    public boolean chooseColor(String title, String header, String content){
+    public void chooseColor(String title, String header, String content){
+
+        String color = "";
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        return true;
+
+        ButtonType amarillo = new ButtonType("Amarillo");
+        ButtonType rojo = new ButtonType("Rojo");
+        ButtonType verde = new ButtonType("Verde");
+        ButtonType azul = new ButtonType("Azul");
+
+        alert.getButtonTypes().setAll(amarillo, rojo, verde, azul);
+
+        ButtonType response = alert.showAndWait().orElse(ButtonType.CANCEL);
+
+        if (response == amarillo){
+            color = "Amarillo";
+        } else if (response == rojo) {
+            color = "Rojo";
+        }else if (response == verde){
+            color = "Verde";
+        }else if (response == azul){
+            color = "Azul";
+        }
+
+        GameUnoController gameUnoController = new GameUnoController();
+        gameUnoController.getColor(color);
+
+    }
+
+    public void machineChooseColor(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Cambio de Color");
+        alert.setHeaderText("La máquina eligió el color..");
+
+        int index = (int) (Math.random() * 4);
+        switch (index){
+            case 0:
+                alert.setContentText("Amarillo");
+                break;
+            case 1:
+                alert.setContentText("Rojo");
+                break;
+            case 2:
+                alert.setContentText("Azul");
+                break;
+            case 3:
+                alert.setContentText("Verde");
+                break;
+        }
+
+
     }
 
 }
