@@ -62,19 +62,18 @@ public class Deck {
             return "8";
         } else if (name.endsWith("9")){
             return "9";
+        } else if (name.contains("REVERSE")) {
+            return "REVERSE";
+        } else if (name.contains("TWO_WILD_DRAW")) {
+            return "+2";
+        } else if (name.equals("FOUR_WILD_DRAW")) {
+            return "+4";
+        } else if (name.equals("WILD")) {
+            return "WILD";
+        } else if (name.contains("SKIP")) {
+            return "SKIP";
         } else {
-            if (name.startsWith("REVERSE_")){
-                return "REVERSE_";
-            } else if (name.startsWith("TWO_WILD_DRAW_")){
-                return "TWO_WILD_DRAW_";
-            } else if (name.equals("FOUR_WILD_DRAW")){
-                return "FOUR_WILD_DRAW";
-            } else if (name.equals("WILD")){
-                return "WILD";
-            } else if (name.startsWith("SKIP_")){
-                return "SKIP_";
-            }
-            return null;
+            return "NON_VALUE";
         }
 
     }
@@ -88,17 +87,8 @@ public class Deck {
             return "BLUE";
         } else if(name.startsWith("RED")){
             return "RED";
-        }else{
-            if (name.contains("GREEN")){
-                return "GREEN";
-            } else if (name.contains("YELLOW")){
-                return "YELLOW";
-            } else if (name.contains("BLUE")){
-                return "BLUE";
-            } else if (name.contains("RED")){
-                return "RED";
-            }
-            return null;
+        } else {
+            return "NON_COLOR";
         }
 
     }
