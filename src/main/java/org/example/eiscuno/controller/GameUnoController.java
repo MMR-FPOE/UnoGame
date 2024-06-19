@@ -16,7 +16,6 @@ import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.view.alert.AlertBox;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -57,12 +56,9 @@ public class GameUnoController implements Observer {
         Thread t = new Thread(threadSingUNOMachine, "ThreadSingUNO");
         t.start();
 
-        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this);
+        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this, this.gameUno);
         threadPlayMachine.start();
-
-        Card firstCard = deck.takeCard();
-        gameUno.playCard(firstCard);
-        tableImageView.setImage(firstCard.getImage());
+        putFirstCard();
     }
 
     /**
@@ -90,13 +86,8 @@ public class GameUnoController implements Observer {
                 ImageView cardImageView = card.getCard();
 
                 cardImageView.setOnMouseClicked((MouseEvent event) -> {
-                    if (card.getValue().startsWith("TWO_WILD_DRAW_") || card.getValue().equals("FOUR_WILD_DRAW")) {
-                        machineTurn = false;
-                        isPlayable.set(true);
-                        hasToEat(machinePlayer);
-                        // la maquina comerá 2 o 4 cartas automaticamente
-                        System.out.println("Maquina come");
-                    } else if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
+
+                    if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
                         machineChooseColor();
                         System.out.println("Maquina cambia color");
                     } else if (card.getValue().equals("WILD")) {
@@ -114,14 +105,8 @@ public class GameUnoController implements Observer {
                         }
                     } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
                         isPlayable.set(true);
-                    }else if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
-                        if (card.getValue().equals("TWO_WILD_DRAW_")) {
-                            if (checkColor(card)){
-                                isPlayable.set(true);
-                            }
-                        } else if (!Objects.equals(card.getValue(), "TWO_WILD_DRAW_")) {
-                            isPlayable.set(true);
-                        }
+                    }else{
+                        isPlayable.set(true);
                     }
                     if (isPlayable.get() && humanTurn) {
                         humanTurn = false;
@@ -131,10 +116,23 @@ public class GameUnoController implements Observer {
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
                         printCardsHumanPlayer();
+                        this.gameUno.validateSpecialCard(card, this.machinePlayer);
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
             }
+    }
+
+    private void putFirstCard(){
+        Card firstCard = deck.takeCard();
+        if (!firstCard.getValue().equals("+4") &&
+            !firstCard.getValue().startsWith("+2") && !firstCard.getValue().equals("WILD") &&
+            !firstCard.getValue().startsWith("SKIP")) {
+            gameUno.playCard(firstCard);
+            tableImageView.setImage(firstCard.getImage());
+        }else{
+            putFirstCard();
+        }
     }
 
     private boolean specialCases(){
@@ -153,18 +151,6 @@ public class GameUnoController implements Observer {
         }
         return "";
     }
-
-    private void hasToEat(Player player){
-        if (specialCases()){
-            if (!threadPlayMachine.searchWild()){
-                if (CardIdentifier().equals("FOUR_WILD_DRAW")) {
-                    gameUno.eatCard(player, 4);
-                }else{
-                    gameUno.eatCard(player, 2);
-                }
-            }
-        }
-    }
     private void changeColor(){
         AlertBox alertBox = new AlertBox();
         alertBox.chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
@@ -173,14 +159,6 @@ public class GameUnoController implements Observer {
 
     private void machineChooseColor(){
         new AlertBox().machineChooseColor();
-    }
-
-    private void machineTakeCard(){
-        if (threadPlayMachine.getHasPlayerPlayed()){
-            Card card = deck.takeCard();
-            machinePlayer.addCard(card);
-            threadPlayMachine.setNoCard(false);
-        }
     }
 
     private void printMachineCards(){

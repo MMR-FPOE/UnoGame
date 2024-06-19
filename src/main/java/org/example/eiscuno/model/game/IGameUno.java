@@ -49,4 +49,6 @@ public interface IGameUno {
      * @return true if the game is over, false otherwise
      */
     Boolean isGameOver();
+
+    void validateSpecialCard(Card card, Player player);
 }

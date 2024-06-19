@@ -4,6 +4,7 @@ import javafx.scene.image.ImageView;
 import org.example.eiscuno.controller.GameUnoController;
 import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.observer.ThreadObservable;
+import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 
@@ -16,18 +17,19 @@ public class ThreadPlayMachine extends Thread {
     private String color;
     private volatile boolean hasPlayerPlayed;
     private volatile boolean haveBeenBlocked;
-    private volatile boolean isPaused;
+    private GameUno gameUno;
 
     private volatile boolean hasToEat;
     AtomicBoolean noCard = new AtomicBoolean(false);
     ThreadObservable observable = new ThreadObservable();
 
-    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUnoController controller) {
+    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUnoController controller, GameUno gameUno) {
         this.table = table;
         this.machinePlayer = machinePlayer;
         this.tableImageView = tableImageView;
         this.hasPlayerPlayed = false;
         this.haveBeenBlocked = false;
+        this.gameUno = gameUno;
 
         observable.addObserver(controller);
     }
@@ -69,7 +71,7 @@ public class ThreadPlayMachine extends Thread {
         return isWild;
     }
     private void putCardOnTheTable(){
-        if(table.getCurrentCardOnTheTable().getColor() != null){
+        if(table.getCurrentCardOnTheTable().getColor() != "NON_COLOR"){
             color = table.getCurrentCardOnTheTable().getColor();
         }
         AtomicBoolean isPlayable = new AtomicBoolean(false);
@@ -79,32 +81,23 @@ public class ThreadPlayMachine extends Thread {
             while (!isPlayable.get()) {
 
                 for(Card card: machinePlayer.getCardsPlayer()){
-                    if(specialCases()){
-                        if(!searchWild()){
-                            hasToEat = true;
-                            break;
-                        }
-                    }
-                    if (checkColor(card)) {
-                        isPlayable.set(true);
-                    } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
-                        isPlayable.set(true);
-                    } else if (table.getCurrentCardOnTheTable().getValue().equals("WILD")){
 
+                    if (this.table.getCurrentCardOnTheTable().getColor().equals(card.getColor()) ||
+                            this.table.getCurrentCardOnTheTable().getValue().equals(card.getValue())){
+                            isPlayable.set(true);
                     } else {
-                        if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")){
+                        if(card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")){
                             if(card.getValue().startsWith("TWO_WILD_DRAW_")){
                                 if(checkColor(card)){
                                     isPlayable.set(true);
                                 }
-                            }else{
-                                isPlayable.set(true);
                             }
                         }
                     }
                     if ((machinePlayer.getCardsPlayer().indexOf(card) == machinePlayer.getCardsPlayer().size() - 1) && !isPlayable.get()){
-                        noCard.set(true);
                         System.out.println("no cards available");
+                        gameUno.eatCard(machinePlayer, 4);
+                        putCardOnTheTable();
                         break;
                         // Comer cartas hasta que exista carta disponible
                     }
@@ -112,6 +105,7 @@ public class ThreadPlayMachine extends Thread {
                         table.addCardOnTheTable(card);
                         machinePlayer.removeCard(findPosCardsMachinePlayer(card));
                         tableImageView.setImage(card.getImage());
+                        this.gameUno.validateSpecialCard(card, gameUno.getHumanPlayer());
                         break;
                     }
                 }
@@ -121,47 +115,12 @@ public class ThreadPlayMachine extends Thread {
         }
     }
 
-    public void setNoCard(boolean cardState) {
-        this.noCard.set(cardState);
-    }
-
-    public boolean getHasToEat(){
-        return this.hasToEat;
-    }
-    public AtomicBoolean machineTakeCard(){
-        return noCard;
-    }
-    public void pauseThread() {
-        try {
-            while(isPaused) {
-                wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-    synchronized public void reload()
-    {
-        System.out.println("the thread using notify()");
-        notify();
-    }
-
     private boolean checkColor(Card card){
         return color.equals(card.getColor());
     }
 
-    public void setPaused(boolean paused) {
-        isPaused = paused;
-    }
-
     public void setColor(String color){
         this.color = color;
-    }
-    private boolean specialCases(){
-        if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
-            return true;
-        }
-        return false;
     }
 
     private boolean machineHasBeenBlocked(){
@@ -175,14 +134,6 @@ public class ThreadPlayMachine extends Thread {
 
     public void setHasPlayerPlayed(boolean hasPlayerPlayed) {
         this.hasPlayerPlayed = hasPlayerPlayed;
-    }
-
-    public void setHaveBeenBlocked(boolean haveBeenBlocked) {
-        this.haveBeenBlocked = haveBeenBlocked;
-    }
-
-    public boolean getHasPlayerPlayed(){
-        return this.hasPlayerPlayed;
     }
 
     private Integer findPosCardsMachinePlayer(Card card) {
