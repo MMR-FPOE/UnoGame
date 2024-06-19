@@ -2,9 +2,9 @@ package org.example.eiscuno.view.alert;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import org.example.eiscuno.controller.GameUnoController;
 
 public class AlertBox implements IAlertBox{
+    String color;
 
     public void WinOrLose(String title, String header, String content){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -34,8 +34,6 @@ public class AlertBox implements IAlertBox{
     }
 
     public void chooseColor(String title, String header, String content){
-
-        String color = "";
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -51,18 +49,14 @@ public class AlertBox implements IAlertBox{
         ButtonType response = alert.showAndWait().orElse(ButtonType.CANCEL);
 
         if (response == amarillo){
-            color = "Amarillo";
+            color = "YELLOW";
         } else if (response == rojo) {
-            color = "Rojo";
+            color = "RED";
         }else if (response == verde){
-            color = "Verde";
+            color = "GREEN";
         }else if (response == azul){
-            color = "Azul";
+            color = "BLUE";
         }
-
-        GameUnoController gameUnoController = new GameUnoController();
-        gameUnoController.getColor(color);
-
     }
 
     public void machineChooseColor(){
@@ -73,20 +67,22 @@ public class AlertBox implements IAlertBox{
         int index = (int) (Math.random() * 4);
         switch (index){
             case 0:
-                alert.setContentText("Amarillo");
+                alert.setContentText("YELLOW");
                 break;
             case 1:
-                alert.setContentText("Rojo");
+                alert.setContentText("RED");
                 break;
             case 2:
-                alert.setContentText("Azul");
+                alert.setContentText("BLUE");
                 break;
             case 3:
-                alert.setContentText("Verde");
+                alert.setContentText("GREEN");
                 break;
         }
+    }
 
-
+    public String getColor(){
+        return color;
     }
 
 }

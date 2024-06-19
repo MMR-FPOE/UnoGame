@@ -60,7 +60,7 @@ public class Player implements IPlayer {
         return cardsPlayer.get(index);
     }
 
-    public String getTypePlayer() {
-        return typePlayer;
-    }
+    public String getTypePlayer() {return typePlayer; }
+
+    public int getArrayCardLength(){ return cardsPlayer.size(); }
 }

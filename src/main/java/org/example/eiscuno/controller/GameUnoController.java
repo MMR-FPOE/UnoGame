@@ -1,9 +1,7 @@
 package org.example.eiscuno.controller;
 
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.image.Image;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -15,10 +13,11 @@ import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 import org.example.eiscuno.model.unoenum.EISCUnoEnum;
-import org.example.eiscuno.view.GameUnoStage;
 import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -27,16 +26,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GameUnoController {
 
     @FXML
-    private GridPane gridPaneCardsMachine;
+    private Label machineCardsLength;
 
     @FXML
     private GridPane gridPaneCardsPlayer;
 
     @FXML
     private ImageView tableImageView;
-
-    @FXML
-    private ImageView unoImageView;
 
     private Player humanPlayer;
     private Player machinePlayer;
@@ -51,6 +47,8 @@ public class GameUnoController {
     private ThreadPlayMachine threadPlayMachine;
 
     private final EISCUnoEnum eiscUnoEnum = EISCUnoEnum.UNO;
+    boolean humanTurn = true;
+    boolean machineTurn = true;
 
     /**
      * Initializes the controller.
@@ -67,6 +65,10 @@ public class GameUnoController {
 
         threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView);
         threadPlayMachine.start();
+
+        Card firstCard = deck.takeCard();
+        gameUno.playCard(firstCard);
+        tableImageView.setImage(firstCard.getImage());
     }
 
     /**
@@ -79,7 +81,6 @@ public class GameUnoController {
         this.table = new Table();
         this.gameUno = new GameUno(this.humanPlayer, this.machinePlayer, this.deck, this.table);
         this.posInitCardToShow = 0;
-        this.changeColor = "";
     }
 
     /**
@@ -95,80 +96,52 @@ public class GameUnoController {
                 ImageView cardImageView = card.getCard();
 
                 cardImageView.setOnMouseClicked((MouseEvent event) -> {
-                    // Aqui deberian verificar si pueden en la tabla jugar esa carta
-                    if (tableImageView.getImage() != null && !humanHasBeenBlocked()) {
-                        if (specialCases()) {
-                            if (card.getValue().startsWith("TWO_WILD_DRAW_")) {
-                                isPlayable.set(true);
-                                hasToEat(machinePlayer);
-                            } else if (card.getValue().equals("FOUR_WILD_DRAW")) {
-                                isPlayable.set(true);
-                                hasToEat(machinePlayer);
-                            }else{
-                                hasToEat(humanPlayer);
-                            }
-                        } else if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
-                            machineChooseColor();
-                        } else if (card.getValue().equals("WILD")) {
-                            changeColor();
+                    if (card.getValue().startsWith("TWO_WILD_DRAW_") || card.getValue().equals("FOUR_WILD_DRAW")) {
+                        machineTurn = false;
+                        isPlayable.set(true);
+                        hasToEat(machinePlayer);
+                        // la maquina comerá 2 o 4 cartas automaticamente
+                        System.out.println("Maquina come");
+                    } else if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
+                        machineChooseColor();
+                        System.out.println("Maquina cambia color");
+                    } else if (card.getValue().equals("WILD")) {
+                        changeColor();
+                        isPlayable.set(true);
+                        System.out.println("Cambio color");
+                    } else if (card.getValue().startsWith("REVERSE")) {
+                        machineTurn = false;
+                        isPlayable.set(true);
+                    } else if (checkColor(card)) {
+                        if (card.getValue().startsWith("SKIP")){
+                            System.out.println("XD"); // XD
+                        }else{
                             isPlayable.set(true);
-                        } else if (checkColor(card)) {
-                            if (card.getValue().startsWith("SKIP_")){
-                                machineBlocked();
-                            }else{
+                        }
+                    } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                        isPlayable.set(true);
+                    }else if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
+                        if (card.getValue().equals("TWO_WILD_DRAW_")) {
+                            if (checkColor(card)){
                                 isPlayable.set(true);
                             }
-                        } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
+                        } else if (!Objects.equals(card.getValue(), "TWO_WILD_DRAW_")) {
                             isPlayable.set(true);
-                        }else if (card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")) {
-                            if (card.getValue().equals("TWO_WILD_DRAW_")) {
-                                if (checkColor(card)){
-                                    isPlayable.set(true);
-                                }
-                            } else if (!Objects.equals(card.getValue(), "TWO_WILD_DRAW_")) {
-                                isPlayable.set(true);
-                            }
                         }
                     }
-                    if (isPlayable.get() || tableImageView.getImage() == null) {
+                    if (isPlayable.get() && humanTurn) {
+                        humanTurn = false;
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
-                        threadPlayMachine.setHasPlayerPlayed(true);
-                        checkMachine();
+                        threadPlayMachine.setHasPlayerPlayed(machineTurn);
                         printCardsHumanPlayer();
-
+                        machineTurn = true;
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
-
-                }
-    }
-    private boolean humanHasBeenBlocked(){
-
-        if (tableImageView.getImage() != null){
-            if (table.getCurrentCardOnTheTable().getValue().startsWith("SKIP_")) {
-                threadPlayMachine.setHasPlayerPlayed(true);
-                //cede el turno a la máquina
-                System.out.println("human blocked");
-
-                return true;
             }
-        }
-        return false;
-    }
-
-    public void checkMachine(){
-        if(threadPlayMachine.machineTakeCard().get()){
-            machineTakeCard();
-            threadPlayMachine.setHasPlayerPlayed(false);
-            System.out.println(" machine takes card");
-        }
-        if (threadPlayMachine.getHasToEat()){
-            hasToEat(machinePlayer);
-            threadPlayMachine.setHasPlayerPlayed(false);
-            System.out.println("machine eats cards");
-        }
+        setHumanTurn();
     }
 
     private boolean specialCases(){
@@ -199,26 +172,14 @@ public class GameUnoController {
             }
         }
     }
-
-    private void machineBlocked(){
-       // threadPlayMachine.setPaused(true);
-        //threadPlayMachine.pauseThread();
-    }
     private void changeColor(){
-
-       // threadPlayMachine.setPaused(true);
-        //threadPlayMachine.pauseThread();
-        new AlertBox().chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
-
-
+        AlertBox alertBox = new AlertBox();
+        alertBox.chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
+        threadPlayMachine.setColor(alertBox.getColor());
     }
 
     private void machineChooseColor(){
         new AlertBox().machineChooseColor();
-    }
-
-    public void getColor(String color){
-        this.changeColor = color;
     }
 
     private void machineTakeCard(){
@@ -229,15 +190,13 @@ public class GameUnoController {
         }
     }
 
+    private void printMachineCards(){
+        int length = machinePlayer.getArrayCardLength();
+        machineCardsLength.setText("x" + length);
+    }
+
     private boolean checkColor(Card card){
-        try {
-            if (table.getCurrentCardOnTheTable().getColor().equals(card.getColor())) {
-                return true;
-            }
-        }catch (NullPointerException e){
-            e.getMessage();
-        }
-        return false;
+        return table.getCurrentCardOnTheTable().getColor().equals(card.getColor());
     }
 
     /**
@@ -255,13 +214,25 @@ public class GameUnoController {
         return -1;
     }
 
+    public void setHumanTurn(){
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                humanTurn = true;
+                timer.cancel();
+            }
+        };
+        timer.schedule(task, 2000);
+        printMachineCards();
+    }
+
     /**
      * Handles the "Back" button action to show the previous set of cards.
      *
-     * @param event the action event
      */
     @FXML
-    void onHandleBack(ActionEvent event) {
+    void onHandleBack() {
         if (this.posInitCardToShow > 0) {
             this.posInitCardToShow--;
             printCardsHumanPlayer();
@@ -271,10 +242,9 @@ public class GameUnoController {
     /**
      * Handles the "Next" button action to show the next set of cards.
      *
-     * @param event the action event
      */
     @FXML
-    void onHandleNext(ActionEvent event) {
+    void onHandleNext() {
         if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 7) {
             this.posInitCardToShow++;
             printCardsHumanPlayer();
@@ -284,27 +254,25 @@ public class GameUnoController {
     /**
      * Handles the action of taking a card.
      *
-     * @param event the action event
      */
     @FXML
-    void onHandleTakeCard(ActionEvent event) {
-        // Implement logic to take a card here
+    void onHandleTakeCard() {
         Card card = deck.takeCard();
         humanPlayer.addCard(card);
+        printCardsHumanPlayer();
     }
 
     /**
      * Handles the action of saying "Uno".
      *
-     * @param event the action event
      */
     @FXML
-    void onHandleUno(ActionEvent event) {
+    void onHandleUno() {
         // Implement logic to handle Uno event here
     }
 
     @FXML
-    void closeGame(ActionEvent event) {
+    void closeGame() {
         System.exit(0);
     }
 }
