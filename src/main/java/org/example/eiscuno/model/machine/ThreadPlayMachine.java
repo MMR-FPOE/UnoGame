@@ -1,13 +1,11 @@
 package org.example.eiscuno.model.machine;
 
-import javafx.application.Platform;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import org.example.eiscuno.controller.GameUnoController;
 import org.example.eiscuno.model.card.Card;
+import org.example.eiscuno.model.observer.ThreadObservable;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
-import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,13 +20,16 @@ public class ThreadPlayMachine extends Thread {
 
     private volatile boolean hasToEat;
     AtomicBoolean noCard = new AtomicBoolean(false);
+    ThreadObservable observable = new ThreadObservable();
 
-    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView) {
+    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUnoController controller) {
         this.table = table;
         this.machinePlayer = machinePlayer;
         this.tableImageView = tableImageView;
         this.hasPlayerPlayed = false;
         this.haveBeenBlocked = false;
+
+        observable.addObserver(controller);
     }
 
     public void run() {
@@ -41,10 +42,14 @@ public class ThreadPlayMachine extends Thread {
                 }
                 putCardOnTheTable();
                 hasPlayerPlayed = false;
+                updateObservers();
             }
         }
     }
 
+    private void updateObservers(){
+        observable.notifyObservers();
+    }
     public void takeACard(Card card){
         table.addCardOnTheTable(card);
         machinePlayer.removeCard(findPosCardsMachinePlayer(card));

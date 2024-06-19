@@ -1,5 +1,6 @@
 package org.example.eiscuno.controller;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -10,20 +11,18 @@ import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.machine.ThreadPlayMachine;
 import org.example.eiscuno.model.machine.ThreadSingUNOMachine;
+import org.example.eiscuno.model.observer.Observer;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
-import org.example.eiscuno.model.unoenum.EISCUnoEnum;
 import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controller class for the Uno game.
  */
-public class GameUnoController {
+public class GameUnoController implements Observer {
 
     @FXML
     private Label machineCardsLength;
@@ -40,13 +39,8 @@ public class GameUnoController {
     private Table table;
     private GameUno gameUno;
     private int posInitCardToShow;
-
-    private String changeColor;
-
     private ThreadSingUNOMachine threadSingUNOMachine;
     private ThreadPlayMachine threadPlayMachine;
-
-    private final EISCUnoEnum eiscUnoEnum = EISCUnoEnum.UNO;
     boolean humanTurn = true;
     boolean machineTurn = true;
 
@@ -63,7 +57,7 @@ public class GameUnoController {
         Thread t = new Thread(threadSingUNOMachine, "ThreadSingUNO");
         t.start();
 
-        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView);
+        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this);
         threadPlayMachine.start();
 
         Card firstCard = deck.takeCard();
@@ -131,17 +125,16 @@ public class GameUnoController {
                     }
                     if (isPlayable.get() && humanTurn) {
                         humanTurn = false;
+                        machineTurn = true;
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
                         printCardsHumanPlayer();
-                        machineTurn = true;
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
             }
-        setHumanTurn();
     }
 
     private boolean specialCases(){
@@ -214,19 +207,6 @@ public class GameUnoController {
         return -1;
     }
 
-    public void setHumanTurn(){
-        Timer timer = new Timer();
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                humanTurn = true;
-                timer.cancel();
-            }
-        };
-        timer.schedule(task, 2000);
-        printMachineCards();
-    }
-
     /**
      * Handles the "Back" button action to show the previous set of cards.
      *
@@ -274,5 +254,12 @@ public class GameUnoController {
     @FXML
     void closeGame() {
         System.exit(0);
+    }
+
+    @Override
+    public void update() {
+        humanTurn = true;
+        machineTurn = false;
+        Platform.runLater(this::printMachineCards);
     }
 }
