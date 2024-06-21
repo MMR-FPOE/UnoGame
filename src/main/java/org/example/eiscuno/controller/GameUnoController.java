@@ -40,8 +40,9 @@ public class GameUnoController implements Observer {
     private int posInitCardToShow;
     private ThreadSingUNOMachine threadSingUNOMachine;
     private ThreadPlayMachine threadPlayMachine;
+    String color;
     boolean humanTurn = true;
-    boolean machineTurn = true;
+    boolean machineTurn;
 
     /**
      * Initializes the controller.
@@ -52,6 +53,8 @@ public class GameUnoController implements Observer {
         putFirstCard();
         this.gameUno.startGame();
         printCardsHumanPlayer();
+
+        color = table.getCurrentCardOnTheTable().getColor();
 
         threadSingUNOMachine = new ThreadSingUNOMachine(this.humanPlayer.getCardsPlayer());
         Thread t = new Thread(threadSingUNOMachine, "ThreadSingUNO");
@@ -87,33 +90,35 @@ public class GameUnoController implements Observer {
                 ImageView cardImageView = card.getCard();
 
                 cardImageView.setOnMouseClicked((MouseEvent event) -> {
+                    machineTurn = true;
+                    getColor();
 
-                     if (card.getValue().equals("WILD")) {
-                        changeColor();
+                    if (card.getValue().equals("WILD")) {
+                        changeColor("¡Elige un color para el contrincante!");
                         isPlayable.set(true);
-                        System.out.println("Cambio color");
-                    } else if (checkColor(card)) {
+                    } else if (checkColor(card) || card.getValue().equals(table.getCurrentCardOnTheTable().getValue())) {
                         if (card.getValue().equals("SKIP") || card.getValue().equals("+2") || card.getValue().equals("REVERSE")){
-                            System.out.println("XD"); // XD
+                            machineTurn = false;
                             isPlayable.set(true);
                         }else{
                             isPlayable.set(true);
                         }
-                    } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
-                        isPlayable.set(true);
                     }else if (card.getValue().equals("+4")){
+                         machineTurn = false;
+                         changeColor("¡Haz puesto un +4, cambia tu color de juego!");
                          isPlayable.set(true);
                     }
                     if (isPlayable.get() && humanTurn) {
-                        humanTurn = false;
-                        machineTurn = true;
+                        if(machineTurn) { humanTurn = false; }
                         System.out.println("machine turn: " +machineTurn);
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
-                        this.gameUno.validateSpecialCard(card, this.machinePlayer);
+                        gameUno.validateSpecialCard(card, this.machinePlayer);
                         printCardsHumanPlayer();
+                        System.out.println("player turn: " + humanTurn);
+                        System.out.println("Cartas en mazo: " + deck.deckLength());
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
@@ -132,9 +137,9 @@ public class GameUnoController implements Observer {
         }
     }
 
-    private void changeColor(){
+    private void changeColor(String header){
         AlertBox alertBox = new AlertBox();
-        alertBox.chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
+        alertBox.chooseColor("Cambio de Color", header);
         threadPlayMachine.setColor(alertBox.getColor());
     }
 
@@ -150,8 +155,16 @@ public class GameUnoController implements Observer {
         }
     }
 
+    private void getColor(){
+        if (table.getCurrentCardOnTheTable().getColor().equals("NON_COLOR")){
+            color = threadPlayMachine.getColor();
+        }else{
+            color = table.getCurrentCardOnTheTable().getColor();
+        }
+    }
+
     private boolean checkColor(Card card){
-        return table.getCurrentCardOnTheTable().getColor().equals(card.getColor());
+        return color.equals(card.getColor());
     }
 
     /**

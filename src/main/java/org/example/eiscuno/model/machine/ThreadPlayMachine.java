@@ -7,7 +7,6 @@ import org.example.eiscuno.model.observer.ThreadObservable;
 import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
-import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,58 +58,40 @@ public class ThreadPlayMachine extends Thread {
             color = table.getCurrentCardOnTheTable().getColor();
         }
         AtomicBoolean isPlayable = new AtomicBoolean(false);
-        boolean noCardsAvailable = false;
 
         if(!machinePlayer.getCardsPlayer().isEmpty()){
-
-            while (!isPlayable.get()) {
-
-                for(Card card: machinePlayer.getCardsPlayer()){
-                   // System.out.println("color: " + card.getColor() + " value: " + card.getValue());
-
-                    if (this.table.getCurrentCardOnTheTable().getColor().equals(card.getColor()) ||
+            for(Card card: machinePlayer.getCardsPlayer()){
+                if (this.color.equals(card.getColor()) ||
                         this.table.getCurrentCardOnTheTable().getValue().equals(card.getValue())){
+                    isPlayable.set(true);
+                }else if (card.getValue().equals("+4") || card.getValue().equals("WILD")){
+                    isPlayable.set(true);
+                }else if (card.getValue().equals("+2") || card.getValue().equals("REVERSE")){
+                    if (this.color.equals(card.getColor()))
                         isPlayable.set(true);
-                    }else if (card.getValue().equals("+4") || card.getValue().equals("+2") || card.getValue().equals("WILD")
-                            || card.getValue().equals("REVERSE")){
-                        humanHaveBeenBlocked = true;
-                        if (card.getValue().equals("+2") || card.getValue().equals("REVERSE")) {
-                            if (this.table.getCurrentCardOnTheTable().getColor().equals(card.getColor())) {
-                                isPlayable.set(true);
-                            }
-                        }else{
-                            isPlayable.set(true);
-                        }
-                    }
-                    if ((machinePlayer.getCardsPlayer().indexOf(card) == machinePlayer.getCardsPlayer().size() - 1) && !isPlayable.get()){
-                        System.out.println("the last card: " + this.table.getCurrentCardOnTheTable().getColor() + " " +  this.table.getCurrentCardOnTheTable().getValue());
-                        System.out.println("no cards available");
-                        gameUno.eatCard(machinePlayer, 1);
-                        noCardsAvailable = true;
-                        putCardOnTheTable();
-                        break;
-                        // Comer cartas hasta que exista carta disponible
-                    }
-                    if (isPlayable.get()) {
-                        table.addCardOnTheTable(card);
-                        machinePlayer.removeCard(findPosCardsMachinePlayer(card));
-                        tableImageView.setImage(card.getImage());
-                        this.gameUno.validateSpecialCard(card, gameUno.getHumanPlayer());
-                        break;
-                    }
                 }
-                if(noCardsAvailable){
+                if ((machinePlayer.getCardsPlayer().indexOf(card) == machinePlayer.getCardsPlayer().size() - 1) && !isPlayable.get()){
+                    System.out.println("no cards available");
+                    gameUno.eatCard(machinePlayer, 1);
+                    putCardOnTheTable();
+                    break;
+                }
+                if (isPlayable.get()) {
+                    table.addCardOnTheTable(card);
+                    machinePlayer.removeCard(findPosCardsMachinePlayer(card));
+                    tableImageView.setImage(card.getImage());
+                    gameUno.validateSpecialCard(card, gameUno.getHumanPlayer());
                     break;
                 }
             }
-        }else{
-            //machine has blocked or has no cards
         }
     }
 
     public void setColor(String color){
         this.color = color;
     }
+
+    public String getColor(){ return color;}
 
     public void setHasPlayerPlayed(boolean hasPlayerPlayed) {
         this.hasPlayerPlayed = hasPlayerPlayed;

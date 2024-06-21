@@ -33,11 +33,10 @@ public class AlertBox implements IAlertBox{
         }*/
     }
 
-    public void chooseColor(String title, String header, String content){
+    public void chooseColor(String title, String header){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText(header);
-        alert.setContentText(content);
 
         ButtonType amarillo = new ButtonType("Amarillo");
         ButtonType rojo = new ButtonType("Rojo");

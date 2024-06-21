@@ -115,4 +115,8 @@ public class Deck {
     public boolean isEmpty() {
         return deckOfCards.isEmpty();
     }
+
+    public int deckLength(){
+        return deckOfCards.size();
+    }
 }
