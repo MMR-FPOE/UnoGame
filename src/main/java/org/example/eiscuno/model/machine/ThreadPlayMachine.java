@@ -7,6 +7,7 @@ import org.example.eiscuno.model.observer.ThreadObservable;
 import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
+import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -16,11 +17,9 @@ public class ThreadPlayMachine extends Thread {
     private ImageView tableImageView;
     private String color;
     private volatile boolean hasPlayerPlayed;
-    private volatile boolean haveBeenBlocked;
+    private volatile boolean humanHaveBeenBlocked;
+    private GameUnoController unoController;
     private GameUno gameUno;
-
-    private volatile boolean hasToEat;
-    AtomicBoolean noCard = new AtomicBoolean(false);
     ThreadObservable observable = new ThreadObservable();
 
     public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUnoController controller, GameUno gameUno) {
@@ -28,8 +27,9 @@ public class ThreadPlayMachine extends Thread {
         this.machinePlayer = machinePlayer;
         this.tableImageView = tableImageView;
         this.hasPlayerPlayed = false;
-        this.haveBeenBlocked = false;
+        this.humanHaveBeenBlocked = false;
         this.gameUno = gameUno;
+        this.unoController = controller;
 
         observable.addObserver(controller);
     }
@@ -43,8 +43,10 @@ public class ThreadPlayMachine extends Thread {
                     e.printStackTrace();
                 }
                 putCardOnTheTable();
-                hasPlayerPlayed = false;
-                updateObservers();
+                hasPlayerPlayed = gameUno.isDoubleTurn();
+                if(!gameUno.isDoubleTurn()) {
+                    updateObservers();
+                }
             }
         }
     }
@@ -52,51 +54,39 @@ public class ThreadPlayMachine extends Thread {
     private void updateObservers(){
         observable.notifyObservers();
     }
-    public void takeACard(Card card){
-        table.addCardOnTheTable(card);
-        machinePlayer.removeCard(findPosCardsMachinePlayer(card));
-        tableImageView.setImage(card.getImage());
-    }
-
-    public boolean searchWild(){
-        boolean isWild = false;
-        for (Card wildCard : machinePlayer.getCardsPlayer()) {
-            if (wildCard.getValue().equals("FOUR_WILD_DRAW") || wildCard.getValue().startsWith("TWO_WILD_DRAW_")) {
-                takeACard(wildCard);
-                isWild = true;
-                break;
-
-            }
-        }
-        return isWild;
-    }
     private void putCardOnTheTable(){
         if(table.getCurrentCardOnTheTable().getColor() != "NON_COLOR"){
             color = table.getCurrentCardOnTheTable().getColor();
         }
         AtomicBoolean isPlayable = new AtomicBoolean(false);
+        boolean noCardsAvailable = false;
 
-        if(!machinePlayer.getCardsPlayer().isEmpty() && !machineHasBeenBlocked()) {
+        if(!machinePlayer.getCardsPlayer().isEmpty()){
 
             while (!isPlayable.get()) {
 
                 for(Card card: machinePlayer.getCardsPlayer()){
+                   // System.out.println("color: " + card.getColor() + " value: " + card.getValue());
 
                     if (this.table.getCurrentCardOnTheTable().getColor().equals(card.getColor()) ||
-                            this.table.getCurrentCardOnTheTable().getValue().equals(card.getValue())){
-                            isPlayable.set(true);
-                    } else {
-                        if(card.getValue().equals("FOUR_WILD_DRAW") || card.getValue().startsWith("TWO_WILD_DRAW_")){
-                            if(card.getValue().startsWith("TWO_WILD_DRAW_")){
-                                if(checkColor(card)){
-                                    isPlayable.set(true);
-                                }
+                        this.table.getCurrentCardOnTheTable().getValue().equals(card.getValue())){
+                        isPlayable.set(true);
+                    }else if (card.getValue().equals("+4") || card.getValue().equals("+2") || card.getValue().equals("WILD")
+                            || card.getValue().equals("REVERSE")){
+                        humanHaveBeenBlocked = true;
+                        if (card.getValue().equals("+2") || card.getValue().equals("REVERSE")) {
+                            if (this.table.getCurrentCardOnTheTable().getColor().equals(card.getColor())) {
+                                isPlayable.set(true);
                             }
+                        }else{
+                            isPlayable.set(true);
                         }
                     }
                     if ((machinePlayer.getCardsPlayer().indexOf(card) == machinePlayer.getCardsPlayer().size() - 1) && !isPlayable.get()){
+                        System.out.println("the last card: " + this.table.getCurrentCardOnTheTable().getColor() + " " +  this.table.getCurrentCardOnTheTable().getValue());
                         System.out.println("no cards available");
-                        gameUno.eatCard(machinePlayer, 4);
+                        gameUno.eatCard(machinePlayer, 1);
+                        noCardsAvailable = true;
                         putCardOnTheTable();
                         break;
                         // Comer cartas hasta que exista carta disponible
@@ -109,28 +99,18 @@ public class ThreadPlayMachine extends Thread {
                         break;
                     }
                 }
+                if(noCardsAvailable){
+                    break;
+                }
             }
         }else{
             //machine has blocked or has no cards
         }
     }
 
-    private boolean checkColor(Card card){
-        return color.equals(card.getColor());
-    }
-
     public void setColor(String color){
         this.color = color;
     }
-
-    private boolean machineHasBeenBlocked(){
-        if (table.getCurrentCardOnTheTable().getValue().startsWith("SKIP_")) {
-            this.hasPlayerPlayed = false;
-            return true;
-        }
-        return false;
-    }
-
 
     public void setHasPlayerPlayed(boolean hasPlayerPlayed) {
         this.hasPlayerPlayed = hasPlayerPlayed;

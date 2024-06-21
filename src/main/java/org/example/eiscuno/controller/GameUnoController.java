@@ -49,6 +49,7 @@ public class GameUnoController implements Observer {
     @FXML
     public void initialize(){
         initVariables();
+        putFirstCard();
         this.gameUno.startGame();
         printCardsHumanPlayer();
 
@@ -58,7 +59,7 @@ public class GameUnoController implements Observer {
 
         threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this, this.gameUno);
         threadPlayMachine.start();
-        putFirstCard();
+
     }
 
     /**
@@ -87,36 +88,32 @@ public class GameUnoController implements Observer {
 
                 cardImageView.setOnMouseClicked((MouseEvent event) -> {
 
-                    if (table.getCurrentCardOnTheTable().getValue().equals("WILD")) {
-                        machineChooseColor();
-                        System.out.println("Maquina cambia color");
-                    } else if (card.getValue().equals("WILD")) {
+                     if (card.getValue().equals("WILD")) {
                         changeColor();
                         isPlayable.set(true);
                         System.out.println("Cambio color");
-                    } else if (card.getValue().startsWith("REVERSE")) {
-                        machineTurn = false;
-                        isPlayable.set(true);
                     } else if (checkColor(card)) {
-                        if (card.getValue().startsWith("SKIP")){
+                        if (card.getValue().equals("SKIP") || card.getValue().equals("+2") || card.getValue().equals("REVERSE")){
                             System.out.println("XD"); // XD
+                            isPlayable.set(true);
                         }else{
                             isPlayable.set(true);
                         }
                     } else if (table.getCurrentCardOnTheTable().getValue().equals(card.getValue())) {
                         isPlayable.set(true);
-                    }else{
-                        isPlayable.set(true);
+                    }else if (card.getValue().equals("+4")){
+                         isPlayable.set(true);
                     }
                     if (isPlayable.get() && humanTurn) {
                         humanTurn = false;
                         machineTurn = true;
+                        System.out.println("machine turn: " +machineTurn);
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
-                        printCardsHumanPlayer();
                         this.gameUno.validateSpecialCard(card, this.machinePlayer);
+                        printCardsHumanPlayer();
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
@@ -127,7 +124,7 @@ public class GameUnoController implements Observer {
         Card firstCard = deck.takeCard();
         if (!firstCard.getValue().equals("+4") &&
             !firstCard.getValue().startsWith("+2") && !firstCard.getValue().equals("WILD") &&
-            !firstCard.getValue().startsWith("SKIP")) {
+            !firstCard.getValue().startsWith("SKIP") && !firstCard.getValue().startsWith("REVERSE")) {
             gameUno.playCard(firstCard);
             tableImageView.setImage(firstCard.getImage());
         }else{
@@ -135,35 +132,22 @@ public class GameUnoController implements Observer {
         }
     }
 
-    private boolean specialCases(){
-        if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW") || table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
-            System.out.println("+4 o +2 case");
-            return true;
-        }
-        return false;
-    }
-
-    private String CardIdentifier(){
-        if (table.getCurrentCardOnTheTable().getValue().equals("FOUR_WILD_DRAW")) {
-            return "FOUR_WILD_DRAW";
-        } else if (table.getCurrentCardOnTheTable().getValue().startsWith("TWO_WILD_DRAW_")) {
-            return "TWO_WILD_DRAW_";
-        }
-        return "";
-    }
     private void changeColor(){
         AlertBox alertBox = new AlertBox();
         alertBox.chooseColor("Cambio de Color", "¡Elige un color para el contrincante!", "");
         threadPlayMachine.setColor(alertBox.getColor());
     }
 
-    private void machineChooseColor(){
-        new AlertBox().machineChooseColor();
-    }
 
     private void printMachineCards(){
         int length = machinePlayer.getArrayCardLength();
         machineCardsLength.setText("x" + length);
+    }
+
+    public void machineChooseColor(){
+        if(this.table.getCurrentCardOnTheTable().getValue().equals("WILD") || this.table.getCurrentCardOnTheTable().getValue().equals("+4")) {
+            new AlertBox().machineChooseColor();
+        }
     }
 
     private boolean checkColor(Card card){
@@ -239,5 +223,6 @@ public class GameUnoController implements Observer {
         humanTurn = true;
         machineTurn = false;
         Platform.runLater(this::printMachineCards);
+        Platform.runLater(this::machineChooseColor);
     }
 }

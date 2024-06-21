@@ -60,7 +60,7 @@ public class AlertBox implements IAlertBox{
     }
 
     public void machineChooseColor(){
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Cambio de Color");
         alert.setHeaderText("La máquina eligió el color..");
 
@@ -68,15 +68,19 @@ public class AlertBox implements IAlertBox{
         switch (index){
             case 0:
                 alert.setContentText("YELLOW");
+                color = "YELLOW";
                 break;
             case 1:
                 alert.setContentText("RED");
+                color = "RED";
                 break;
             case 2:
                 alert.setContentText("BLUE");
+                color = "BLUE";
                 break;
             case 3:
                 alert.setContentText("GREEN");
+                color = "GREEN";
                 break;
         }
     }

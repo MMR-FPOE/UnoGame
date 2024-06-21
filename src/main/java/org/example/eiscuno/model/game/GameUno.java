@@ -5,6 +5,8 @@ import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Represents a game of Uno.
  * This class manages the game logic and interactions between players, deck, and the table.
@@ -138,5 +140,16 @@ public class GameUno implements IGameUno {
 
     public Player getHumanPlayer() {
         return humanPlayer;
+    }
+
+    public boolean isDoubleTurn(){
+        if (this.table.getCurrentCardOnTheTable().getValue().equals("REVERSE") ||
+                this.table.getCurrentCardOnTheTable().getValue().equals("SKIP") ||
+                this.table.getCurrentCardOnTheTable().getValue().equals("+2") ||
+                this.table.getCurrentCardOnTheTable().getValue().equals("+4")){
+            return true;
+        }else{
+            return false;
+        }
     }
 }
