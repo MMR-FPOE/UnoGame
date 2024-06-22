@@ -41,6 +41,11 @@ public class Deck {
         Collections.shuffle(deckOfCards);
     }
 
+    /**
+     * Obtains the value of the card.
+     *
+     * @return the value of the card
+     */
     private String getCardValue(String name) {
         if (name.endsWith("0")){
             return "0";
@@ -78,6 +83,11 @@ public class Deck {
 
     }
 
+    /**
+     * Obtains the color of the card.
+     *
+     * @return the color of the card
+     */
     private String getCardColor(String name){
         if(name.contains("GREEN")){
             return "GREEN";
@@ -115,7 +125,6 @@ public class Deck {
     public boolean isEmpty() {
         return deckOfCards.isEmpty();
     }
-
     public int deckLength(){
         return deckOfCards.size();
     }
