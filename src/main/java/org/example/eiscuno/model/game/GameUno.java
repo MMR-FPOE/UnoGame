@@ -59,6 +59,10 @@ public class GameUno implements IGameUno {
         for (int i = 0; i < numberOfCards; i++) {
             player.addCard(this.deck.takeCard());
         }
+        if(deck.isEmpty()){
+            System.out.println("MAZO VACIO");
+            table.cleanTableCards(deck);
+        }
     }
 
     /**
@@ -126,6 +130,10 @@ public class GameUno implements IGameUno {
 
         if(numberOfCards > 0){
             System.out.println(player.getTypePlayer() + " have: " + player.getCardsPlayer().size() + " cards");
+        }
+
+        if(numberOfCards > deck.deckLength()){
+            table.cleanTableCards(deck);
         }
 
         for (int i = 0; i < numberOfCards; i++) {

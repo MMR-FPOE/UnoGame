@@ -119,4 +119,8 @@ public class Deck {
     public int deckLength(){
         return deckOfCards.size();
     }
+
+    public void addCard(Card card){
+        deckOfCards.add(card);
+    }
 }

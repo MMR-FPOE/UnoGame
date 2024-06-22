@@ -3,6 +3,7 @@ package org.example.eiscuno.model.machine;
 import javafx.scene.image.ImageView;
 import org.example.eiscuno.controller.GameUnoController;
 import org.example.eiscuno.model.card.Card;
+import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.observer.ThreadObservable;
 import org.example.eiscuno.model.game.GameUno;
 import org.example.eiscuno.model.player.Player;
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPlayMachine extends Thread {
     private Table table;
+    private Deck deck;
     private Player machinePlayer;
     private ImageView tableImageView;
     private String color;
@@ -21,10 +23,11 @@ public class ThreadPlayMachine extends Thread {
     private GameUno gameUno;
     ThreadObservable observable = new ThreadObservable();
 
-    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, GameUnoController controller, GameUno gameUno) {
+    public ThreadPlayMachine(Table table, Player machinePlayer, ImageView tableImageView, Deck deck, GameUnoController controller, GameUno gameUno) {
         this.table = table;
         this.machinePlayer = machinePlayer;
         this.tableImageView = tableImageView;
+        this.deck = deck;
         this.hasPlayerPlayed = false;
         this.humanHaveBeenBlocked = false;
         this.gameUno = gameUno;
@@ -43,9 +46,7 @@ public class ThreadPlayMachine extends Thread {
                 }
                 putCardOnTheTable();
                 hasPlayerPlayed = gameUno.isDoubleTurn();
-                if(!gameUno.isDoubleTurn()) {
-                    updateObservers();
-                }
+                updateObservers();
             }
         }
     }
@@ -105,5 +106,4 @@ public class ThreadPlayMachine extends Thread {
         }
         return -1;
     }
-
 }

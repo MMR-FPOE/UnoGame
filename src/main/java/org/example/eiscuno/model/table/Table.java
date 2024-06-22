@@ -1,6 +1,7 @@
 package org.example.eiscuno.model.table;
 
 import org.example.eiscuno.model.card.Card;
+import org.example.eiscuno.model.deck.Deck;
 
 import java.util.ArrayList;
 
@@ -30,12 +31,19 @@ public class Table {
      * Retrieves the current card on the table.
      *
      * @return The card currently on the table.
-     * @throws IndexOutOfBoundsException if there are no cards on the table.
      */
     public Card getCurrentCardOnTheTable() throws IndexOutOfBoundsException {
-        if (cardsTable.isEmpty()) {
-            throw new IndexOutOfBoundsException("There are no cards on the table.");
-        }
         return this.cardsTable.get(this.cardsTable.size()-1);
+    }
+
+    public void cleanTableCards(Deck deck){
+        for (Card card : cardsTable){
+            if(cardsTable.size() != 1){
+            deck.addCard(card);
+            }
+        }
+        while(cardsTable.size() != 1){
+            cardsTable.remove(0);
+        }
     }
 }

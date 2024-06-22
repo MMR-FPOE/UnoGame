@@ -60,7 +60,7 @@ public class GameUnoController implements Observer {
         Thread t = new Thread(threadSingUNOMachine, "ThreadSingUNO");
         t.start();
 
-        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this, this.gameUno);
+        threadPlayMachine = new ThreadPlayMachine(this.table, this.machinePlayer, this.tableImageView, this.deck, this, this.gameUno);
         threadPlayMachine.start();
 
     }
@@ -81,6 +81,9 @@ public class GameUnoController implements Observer {
      * Prints the human player's cards on the grid pane.
      */
     private void printCardsHumanPlayer() {
+        if((posInitCardToShow + 7 > humanPlayer.getArrayCardLength()) && (humanPlayer.getArrayCardLength() > 6)){
+            posInitCardToShow--;
+        }
         AtomicBoolean isPlayable = new AtomicBoolean(false);
         this.gridPaneCardsPlayer.getChildren().clear();
         Card[] currentVisibleCardsHumanPlayer = this.gameUno.getCurrentVisibleCardsHumanPlayer(this.posInitCardToShow);
@@ -109,14 +112,15 @@ public class GameUnoController implements Observer {
                          isPlayable.set(true);
                     }
                     if (isPlayable.get() && humanTurn) {
-                        if(machineTurn) { humanTurn = false; }
-                        System.out.println("machine turn: " +machineTurn);
+                        if (machineTurn) { humanTurn = false; }
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
                         gameUno.validateSpecialCard(card, this.machinePlayer);
                         printCardsHumanPlayer();
+
+                        System.out.println("machine turn: " + machineTurn);
                         System.out.println("player turn: " + humanTurn);
                         System.out.println("Cartas en mazo: " + deck.deckLength());
                     }
@@ -163,6 +167,15 @@ public class GameUnoController implements Observer {
         }
     }
 
+    private void checkEmptyDeck(){
+        if(!deck.isEmpty()){
+            humanPlayer.addCard(deck.takeCard());
+            System.out.println("MAZO: " + deck.deckLength());
+        } else {
+            System.out.println("MAZO VACIO");
+            table.cleanTableCards(deck);
+        }
+    }
     private boolean checkColor(Card card){
         return color.equals(card.getColor());
     }
@@ -200,7 +213,7 @@ public class GameUnoController implements Observer {
      */
     @FXML
     void onHandleNext() {
-        if (this.posInitCardToShow < this.humanPlayer.getCardsPlayer().size() - 7) {
+        if (this.posInitCardToShow < this.humanPlayer.getArrayCardLength() - 7) {
             this.posInitCardToShow++;
             printCardsHumanPlayer();
         }
@@ -212,8 +225,8 @@ public class GameUnoController implements Observer {
      */
     @FXML
     void onHandleTakeCard() {
-        Card card = deck.takeCard();
-        humanPlayer.addCard(card);
+        checkEmptyDeck();
+        if(this.humanPlayer.getArrayCardLength() > 7){ this.posInitCardToShow = this.humanPlayer.getArrayCardLength() - 7; }
         printCardsHumanPlayer();
     }
 
@@ -233,8 +246,10 @@ public class GameUnoController implements Observer {
 
     @Override
     public void update() {
-        humanTurn = true;
-        machineTurn = false;
+        if(!gameUno.isDoubleTurn()){
+            humanTurn = true;
+            machineTurn = false;
+        }
         Platform.runLater(this::printMachineCards);
         Platform.runLater(this::machineChooseColor);
     }
