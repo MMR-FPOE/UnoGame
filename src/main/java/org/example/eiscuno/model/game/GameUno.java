@@ -57,12 +57,11 @@ public class GameUno implements IGameUno {
      */
     @Override
     public void eatCard(Player player, int numberOfCards) {
+        if(numberOfCards > deck.deckLength()){
+            table.cleanTableCards(deck);
+        }
         for (int i = 0; i < numberOfCards; i++) {
             player.addCard(this.deck.takeCard());
-        }
-        if(deck.isEmpty()){
-            System.out.println("MAZO VACIO");
-            table.cleanTableCards(deck);
         }
     }
 
@@ -107,22 +106,6 @@ public class GameUno implements IGameUno {
         }
 
         return cards;
-    }
-
-    /**
-     * Checks if the game is over.
-     *
-     * @return True if the deck is empty, indicating the game is over; otherwise, false.
-     */
-    @Override
-    public Boolean isGameOver() {
-        if(machinePlayer.getCardsPlayer().isEmpty()){
-            new AlertBox().WinOrLose("Perdiste", "El juego terminó", "La máquina te venció");
-            return true;
-        } else if (humanPlayer.getCardsPlayer().isEmpty()) {
-            new AlertBox().WinOrLose("Ganaste", "El juego terminó", "Venciste a la máquina");
-        }
-        return false;
     }
 
     /**

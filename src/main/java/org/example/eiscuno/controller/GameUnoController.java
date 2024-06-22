@@ -43,6 +43,7 @@ public class GameUnoController implements Observer {
     volatile String color;
     boolean humanTurn = true;
     boolean machineTurn;
+    boolean finishGame = false;
 
     /**
      * Initializes the controller.
@@ -107,18 +108,26 @@ public class GameUnoController implements Observer {
                             isPlayable.set(true);
                         }
                     }else if (card.getValue().equals("+4")){
-                        // machineTurn = false;
-                         changeColor("¡Haz puesto un +4, cambia tu color de juego!");
-                         isPlayable.set(true);
+                        machineTurn = false;
+                        changeColor("¡Haz puesto un +4, cambia tu color de juego!");
+                        isPlayable.set(true);
                     }
                     if (isPlayable.get() && humanTurn) {
-                        if (machineTurn) { humanTurn = false; }
+                        if (machineTurn) {
+                            humanTurn = false;
+                        }
+
                         gameUno.playCard(card);
                         tableImageView.setImage(card.getImage());
                         humanPlayer.removeCard(findPosCardsHumanPlayer(card));
                         gameUno.validateSpecialCard(card, this.machinePlayer);
+
+                        checkGameOver();
+
                         threadPlayMachine.setHasPlayerPlayed(machineTurn);
+
                         printCardsHumanPlayer();
+                        printMachineCards();
 
                         System.out.println("machine turn: " + machineTurn);
                         System.out.println("player turn: " + humanTurn);
@@ -167,7 +176,6 @@ public class GameUnoController implements Observer {
      * Shows the machine's alert, for color change
      */
     public void machineChooseColor(){
-        System.out.println("color: " + color);
         if(this.table.getCurrentCardOnTheTable().getValue().equals("WILD") || this.table.getCurrentCardOnTheTable().getValue().equals("+4")) {
             AlertBox alertBox = new AlertBox();
             alertBox.machineChooseColor();
@@ -220,6 +228,20 @@ public class GameUnoController implements Observer {
     }
 
     /**
+     * Checks if the game is over.
+     */
+    private void checkGameOver(){
+        if(machinePlayer.getCardsPlayer().isEmpty()){
+            finishGame = true;
+            machineTurn = false;
+            new AlertBox().WinOrLose("Perdiste", "El juego terminó", "La máquina te venció");
+        } else if (humanPlayer.getCardsPlayer().isEmpty()) {
+            finishGame = true;
+            machineTurn = false;
+            new AlertBox().WinOrLose("Ganaste", "El juego terminó", "Venciste a la máquina");
+        }
+    }
+    /**
      * Handles the "Back" button action to show the previous set of cards.
      *
      */
@@ -249,9 +271,11 @@ public class GameUnoController implements Observer {
      */
     @FXML
     void onHandleTakeCard() {
-        checkEmptyDeck();
-        if(this.humanPlayer.getArrayCardLength() > 7){ this.posInitCardToShow = this.humanPlayer.getArrayCardLength() - 7; }
-        printCardsHumanPlayer();
+        if(humanTurn){
+            checkEmptyDeck();
+            if(this.humanPlayer.getArrayCardLength() >= 7){ this.posInitCardToShow = this.humanPlayer.getArrayCardLength() - 7; }
+            printCardsHumanPlayer();
+        }
     }
 
     /**
@@ -260,14 +284,14 @@ public class GameUnoController implements Observer {
      */
     @FXML
     void onHandleUno() {
-        // Implement logic to handle Uno event here
         if(humanPlayer.getCardsPlayer().size() == 1){
             humanPlayer.setProtectedByUno(true);
             new AlertBox().SingsUno("¡Cantaste Uno!", "Estás protegido");
         }
-        if(!machinePlayer.isProtectedByUno() && machinePlayer.getCardsPlayer().size() == 1){
+        if(machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() == 1){
             new AlertBox().SingsUno("¡Cantaste Uno!", "La máquina come una carta");
             gameUno.haveSungOne("HUMAN_PLAYER");
+            printMachineCards();
             System.out.println("machine eats one card");
         }
     }
@@ -293,5 +317,8 @@ public class GameUnoController implements Observer {
         }
         Platform.runLater(this::machineChooseColor);
         Platform.runLater(this::printMachineCards);
+        Platform.runLater(this::printCardsHumanPlayer);
+        if(!finishGame){
+            Platform.runLater(this::checkGameOver);}
     }
 }

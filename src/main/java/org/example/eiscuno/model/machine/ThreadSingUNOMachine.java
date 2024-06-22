@@ -1,15 +1,9 @@
 package org.example.eiscuno.model.machine;
 
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import org.example.eiscuno.controller.GameUnoController;
-import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.game.GameUno;
-import org.example.eiscuno.model.observer.ThreadObservable;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.view.alert.AlertBox;
-
-import java.util.ArrayList;
 
 /**
  * Machine thread to sing one
@@ -52,13 +46,9 @@ public class ThreadSingUNOMachine implements Runnable{
      * checks if the Human player has only one card left
      */
     private void hasOneCardTheHumanPlayer(){
-        if(humanPlayer.getCardsPlayer().size() == 1){
-            System.out.println("UNO");
-            if(!humanPlayer.isProtectedByUno()){
-                gameUno.haveSungOne("MACHINE_PLAYER");
-                System.out.println("human eats 1 card");
+        if(humanPlayer.getCardsPlayer().size() == 1 && humanPlayer.getProtectedByUno()){
+            gameUno.haveSungOne("MACHINE_PLAYER");
             }
-        }
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
@@ -72,7 +62,6 @@ public class ThreadSingUNOMachine implements Runnable{
      */
     private void hasOneCardTheMachinePlayer(){
         if(machinePlayer.getCardsPlayer().size() == 1){
-            System.out.println("UNO MÁQUINA");
             Platform.runLater(this::alertMachine);
             machinePlayer.setProtectedByUno(true);
         }

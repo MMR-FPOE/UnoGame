@@ -45,5 +45,6 @@ public class Table {
         while(cardsTable.size() != 1){
             cardsTable.remove(0);
         }
+        deck.shuffleDeck();
     }
 }

@@ -38,7 +38,7 @@ public class Deck {
                 deckOfCards.push(card);
             }
         }
-        Collections.shuffle(deckOfCards);
+        shuffleDeck();
     }
 
     /**
@@ -128,8 +128,8 @@ public class Deck {
     public int deckLength(){
         return deckOfCards.size();
     }
-
     public void addCard(Card card){
         deckOfCards.add(card);
     }
+    public void shuffleDeck() { Collections.shuffle(deckOfCards);}
 }

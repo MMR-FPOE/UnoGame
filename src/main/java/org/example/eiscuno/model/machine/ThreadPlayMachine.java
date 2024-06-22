@@ -1,5 +1,6 @@
 package org.example.eiscuno.model.machine;
 
+import javafx.application.Platform;
 import javafx.scene.image.ImageView;
 import org.example.eiscuno.controller.GameUnoController;
 import org.example.eiscuno.model.card.Card;
@@ -18,6 +19,7 @@ public class ThreadPlayMachine extends Thread {
     private Table table;
     private Deck deck;
     private Player machinePlayer;
+    private GameUnoController controller;
     private ImageView tableImageView;
     private volatile String color;
     private volatile boolean hasPlayerPlayed;
@@ -40,6 +42,7 @@ public class ThreadPlayMachine extends Thread {
         this.deck = deck;
         this.hasPlayerPlayed = false;
         this.gameUno = gameUno;
+        this.controller = controller;
 
         observable.addObserver(controller);
     }

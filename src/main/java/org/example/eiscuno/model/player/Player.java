@@ -90,7 +90,7 @@ public class Player implements IPlayer {
      *
      * @return isProtectedByUno The protectedByUno variable
      */
-    public boolean isProtectedByUno() {
-        return isProtectedByUno;
+    public boolean getProtectedByUno() {
+        return !isProtectedByUno;
     }
 }

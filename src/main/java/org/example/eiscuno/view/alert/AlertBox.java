@@ -1,10 +1,10 @@
 package org.example.eiscuno.view.alert;
 
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import org.example.eiscuno.view.GameUnoStage;
-
-import java.io.IOException;
+import javafx.util.Duration;
 
 /**
  * Interface for creating alerts
@@ -26,24 +26,16 @@ public class AlertBox implements IAlertBox{
         alert.setHeaderText(header);
         alert.setContentText(content);
 
-        ButtonType restart = new ButtonType("Jugar de nuevo");
         ButtonType exit = new ButtonType("Salir");
 
-        alert.getButtonTypes().setAll(restart, exit);
+        alert.getButtonTypes().setAll(exit);
 
         ButtonType response = alert.showAndWait().orElse(ButtonType.CANCEL);
 
-        if (response == restart) {
-            try {
-                GameUnoStage.getInstance();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            GameUnoStage.deleteInstance();
-
-        } else if (response == exit) {
-            GameUnoStage.deleteInstance();
+        if(response == exit){
+            System.exit(0);
         }
+
     }
 
     /**
@@ -104,7 +96,8 @@ public class AlertBox implements IAlertBox{
                 color = "GREEN";
                 break;
         }
-        alert.showAndWait();
+        alert.show();
+        Platform.runLater(() -> alertDelay(alert));
     }
 
     /**
@@ -118,7 +111,8 @@ public class AlertBox implements IAlertBox{
         alert.setTitle("¡Sang Uno!");
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.showAndWait();
+        alert.show();
+        Platform.runLater(() -> alertDelay(alert));
     }
 
     /**
@@ -130,4 +124,12 @@ public class AlertBox implements IAlertBox{
         return color;
     }
 
+    public void alertDelay(Alert alert){
+        alert.show();
+
+        PauseTransition delay = new PauseTransition(Duration.millis(2000));
+        delay.setOnFinished(event -> alert.close());
+
+        delay.play();
+    }
 }
