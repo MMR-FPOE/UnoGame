@@ -2,10 +2,24 @@ package org.example.eiscuno.view.alert;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import org.example.eiscuno.view.GameUnoStage;
 
+import java.io.IOException;
+
+/**
+ * Interface for creating alerts
+ * Provides different methods to create alerts for the UnoGame
+ */
 public class AlertBox implements IAlertBox{
-    String color;
+    volatile String color;
 
+    /**
+     * Adds a card to the player's hand.
+     *
+     * @param title The alert title
+     * @param header The alert header.
+     * @param content The alert content.
+     */
     public void WinOrLose(String title, String header, String content){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
@@ -19,20 +33,25 @@ public class AlertBox implements IAlertBox{
 
         ButtonType response = alert.showAndWait().orElse(ButtonType.CANCEL);
 
-        /*
         if (response == restart) {
             try {
-                WelcomeStage.getInstance();
+                GameUnoStage.getInstance();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            GameStage.deleteInstance();
+            GameUnoStage.deleteInstance();
 
         } else if (response == exit) {
-            GameStage.deleteInstance();
-        }*/
+            GameUnoStage.deleteInstance();
+        }
     }
 
+    /**
+     * Create the human alert for the chooseColor in the game
+     *
+     * @param title The alert title
+     * @param header The alert header.
+     */
     public void chooseColor(String title, String header){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
@@ -58,6 +77,9 @@ public class AlertBox implements IAlertBox{
         }
     }
 
+    /**
+     * Creates the machine alert for the chooseColor in the game
+     */
     public void machineChooseColor(){
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Cambio de Color");
@@ -82,8 +104,28 @@ public class AlertBox implements IAlertBox{
                 color = "GREEN";
                 break;
         }
+        alert.showAndWait();
     }
 
+    /**
+     * Creates the alerts to sing one
+     *
+     * @param header The alert header.
+     * @param content The alert content.
+     */
+    public void SingsUno(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("¡Sang Uno!");
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    /**
+     * Gets the color variable
+     *
+     * @return color The color variable
+     */
     public String getColor(){
         return color;
     }

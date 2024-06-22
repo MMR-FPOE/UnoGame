@@ -1,16 +1,40 @@
 package org.example.eiscuno.model.machine;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import org.example.eiscuno.controller.GameUnoController;
 import org.example.eiscuno.model.card.Card;
+import org.example.eiscuno.model.game.GameUno;
+import org.example.eiscuno.model.observer.ThreadObservable;
+import org.example.eiscuno.model.player.Player;
+import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.ArrayList;
 
+/**
+ * Machine thread to sing one
+ */
 public class ThreadSingUNOMachine implements Runnable{
-    private ArrayList<Card> cardsPlayer;
+    private Player humanPlayer;
+    private Player machinePlayer;
+    private GameUno gameUno;
 
-    public ThreadSingUNOMachine(ArrayList<Card> cardsPlayer){
-        this.cardsPlayer = cardsPlayer;
+    /**
+     * Constructs a new ThreadSIng instance.
+     *
+     * @param humanPlayer   The human player participating in the game.
+     * @param machinePlayer The machine player participating in the game.
+     * @param gameUno        The game uno instance for the game.
+     */
+    public ThreadSingUNOMachine(Player humanPlayer, Player machinePlayer,  GameUno gameUno){
+        this.humanPlayer = humanPlayer;
+        this.machinePlayer = machinePlayer;
+        this.gameUno = gameUno;
     }
 
+    /**
+     * Thread running method
+     */
     @Override
     public void run(){
         while (true){
@@ -19,13 +43,51 @@ public class ThreadSingUNOMachine implements Runnable{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            hasOneCardTheMachinePlayer();
             hasOneCardTheHumanPlayer();
         }
     }
 
+    /**
+     * checks if the Human player has only one card left
+     */
     private void hasOneCardTheHumanPlayer(){
-        if(cardsPlayer.size() == 1){
+        if(humanPlayer.getCardsPlayer().size() == 1){
             System.out.println("UNO");
+            if(!humanPlayer.isProtectedByUno()){
+                gameUno.haveSungOne("MACHINE_PLAYER");
+                System.out.println("human eats 1 card");
+            }
         }
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        humanPlayer.setProtectedByUno(false);
+    }
+
+    /**
+     * checks if the Machine player has only one card left
+     */
+    private void hasOneCardTheMachinePlayer(){
+        if(machinePlayer.getCardsPlayer().size() == 1){
+            System.out.println("UNO MÁQUINA");
+            Platform.runLater(this::alertMachine);
+            machinePlayer.setProtectedByUno(true);
+        }
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        machinePlayer.setProtectedByUno(false);
+    }
+
+    /**
+     * Shows the sing one alert
+     */
+    private void alertMachine(){
+        new AlertBox().SingsUno("¡Uno!", "La máquina se protege");
     }
 }

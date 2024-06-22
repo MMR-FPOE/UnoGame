@@ -4,6 +4,7 @@ import org.example.eiscuno.model.card.Card;
 import org.example.eiscuno.model.deck.Deck;
 import org.example.eiscuno.model.player.Player;
 import org.example.eiscuno.model.table.Table;
+import org.example.eiscuno.view.alert.AlertBox;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -115,9 +116,18 @@ public class GameUno implements IGameUno {
      */
     @Override
     public Boolean isGameOver() {
-        return null;
+        if(machinePlayer.getCardsPlayer().isEmpty()){
+            new AlertBox().WinOrLose("Perdiste", "El juego terminó", "La máquina te venció");
+            return true;
+        } else if (humanPlayer.getCardsPlayer().isEmpty()) {
+            new AlertBox().WinOrLose("Ganaste", "El juego terminó", "Venciste a la máquina");
+        }
+        return false;
     }
 
+    /**
+     * Validate if it is a special card
+     */
     @Override
     public void validateSpecialCard(Card card, Player player) {
         int numberOfCards = 0;
@@ -146,10 +156,20 @@ public class GameUno implements IGameUno {
         }
     }
 
+    /**
+     * Gets the humanPlayer instance.
+     *
+     * @return the humanPlayer of the game
+     */
     public Player getHumanPlayer() {
         return humanPlayer;
     }
 
+    /**
+     * Checks if the player has a double turn
+     *
+     * @return the humanPlayer of the game
+     */
     public boolean isDoubleTurn(){
         if (this.table.getCurrentCardOnTheTable().getValue().equals("REVERSE") ||
                 this.table.getCurrentCardOnTheTable().getValue().equals("SKIP") ||
