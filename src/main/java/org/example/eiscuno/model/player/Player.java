@@ -91,6 +91,6 @@ public class Player implements IPlayer {
      * @return isProtectedByUno The protectedByUno variable
      */
     public boolean getProtectedByUno() {
-        return !isProtectedByUno;
+        return isProtectedByUno;
     }
 }

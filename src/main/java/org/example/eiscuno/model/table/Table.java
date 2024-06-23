@@ -36,6 +36,10 @@ public class Table {
         return this.cardsTable.get(this.cardsTable.size()-1);
     }
 
+    /**
+     * Retrieves the current card on the table.
+     * @param deck      The deck instance.
+     */
     public void cleanTableCards(Deck deck){
         for (Card card : cardsTable){
             if(cardsTable.size() != 1){
@@ -46,5 +50,13 @@ public class Table {
             cardsTable.remove(0);
         }
         deck.shuffleDeck();
+    }
+
+    /**
+     * Retrieves the array of cards on the table.
+     * @return       The cardsTable instance.
+     */
+    public ArrayList<Card> getCardsTable() {
+        return cardsTable;
     }
 }

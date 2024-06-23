@@ -111,8 +111,7 @@ public class AlertBox implements IAlertBox{
         alert.setTitle("¡Sang Uno!");
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.show();
-        Platform.runLater(() -> alertDelay(alert));
+        alert.showAndWait();
     }
 
     /**
@@ -124,6 +123,9 @@ public class AlertBox implements IAlertBox{
         return color;
     }
 
+    /**
+     * Alerts delay
+     */
     public void alertDelay(Alert alert){
         alert.show();
 

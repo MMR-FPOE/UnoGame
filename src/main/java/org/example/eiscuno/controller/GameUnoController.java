@@ -195,6 +195,9 @@ public class GameUnoController implements Observer {
         }
     }
 
+    /**
+     * checks if the deck array is empty, if is true, take the cards from the table
+     */
     private void checkEmptyDeck(){
         if(!deck.isEmpty()){
             humanPlayer.addCard(deck.takeCard());
@@ -284,11 +287,11 @@ public class GameUnoController implements Observer {
      */
     @FXML
     void onHandleUno() {
-        if(humanPlayer.getCardsPlayer().size() == 1){
+        if(humanPlayer.getCardsPlayer().size() == 1 && !humanPlayer.getProtectedByUno()){
             humanPlayer.setProtectedByUno(true);
             new AlertBox().SingsUno("¡Cantaste Uno!", "Estás protegido");
         }
-        if(machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() == 1){
+        if(!machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() == 1){
             new AlertBox().SingsUno("¡Cantaste Uno!", "La máquina come una carta");
             gameUno.haveSungOne("HUMAN_PLAYER");
             printMachineCards();
@@ -320,5 +323,18 @@ public class GameUnoController implements Observer {
         Platform.runLater(this::printCardsHumanPlayer);
         if(!finishGame){
             Platform.runLater(this::checkGameOver);}
+            Platform.runLater(this::resetSetProtected);
+    }
+
+    /**
+     * Resets the isProtectedVariable
+     */
+    public void resetSetProtected(){
+        if(machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() == 2){
+            machinePlayer.setProtectedByUno(false);
+        }
+        if (humanPlayer.getProtectedByUno() && humanPlayer.getCardsPlayer().size() == 2){
+            humanPlayer.setProtectedByUno(false);
+        }
     }
 }

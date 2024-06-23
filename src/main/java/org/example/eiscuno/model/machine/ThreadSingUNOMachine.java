@@ -46,31 +46,30 @@ public class ThreadSingUNOMachine implements Runnable{
      * checks if the Human player has only one card left
      */
     private void hasOneCardTheHumanPlayer(){
-        if(humanPlayer.getCardsPlayer().size() == 1 && humanPlayer.getProtectedByUno()){
+        if(humanPlayer.getCardsPlayer().size() == 1 && !humanPlayer.getProtectedByUno()){
+            Platform.runLater(this::alertForHumanByMachine);
             gameUno.haveSungOne("MACHINE_PLAYER");
-            }
+        }
         try {
-            Thread.sleep(4000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        humanPlayer.setProtectedByUno(false);
     }
 
     /**
      * checks if the Machine player has only one card left
      */
     private void hasOneCardTheMachinePlayer(){
-        if(machinePlayer.getCardsPlayer().size() == 1){
+        if(machinePlayer.getCardsPlayer().size() == 1 && !machinePlayer.getProtectedByUno()){
             Platform.runLater(this::alertMachine);
             machinePlayer.setProtectedByUno(true);
         }
         try {
-            Thread.sleep(4000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        machinePlayer.setProtectedByUno(false);
     }
 
     /**
@@ -79,4 +78,6 @@ public class ThreadSingUNOMachine implements Runnable{
     private void alertMachine(){
         new AlertBox().SingsUno("¡Uno!", "La máquina se protege");
     }
+    private void alertForHumanByMachine(){ new AlertBox().SingsUno("¡Uno!", "La máquina cantó uno por ti, comes una carta");}
+
 }

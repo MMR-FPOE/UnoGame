@@ -125,11 +125,22 @@ public class Deck {
     public boolean isEmpty() {
         return deckOfCards.isEmpty();
     }
+    /**
+     * Deck length
+     * @return length of deck
+     */
     public int deckLength(){
         return deckOfCards.size();
     }
+    /**
+     * Add the card to the deck
+     * @param card      The card instance.
+     */
     public void addCard(Card card){
         deckOfCards.add(card);
     }
+    /**
+     * Shuffle the deck of cards
+     */
     public void shuffleDeck() { Collections.shuffle(deckOfCards);}
 }
