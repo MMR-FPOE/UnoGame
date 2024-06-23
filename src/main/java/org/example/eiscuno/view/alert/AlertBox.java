@@ -4,6 +4,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 /**
@@ -25,6 +26,7 @@ public class AlertBox implements IAlertBox{
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+        alert.initStyle(StageStyle.UNDECORATED);
 
         ButtonType exit = new ButtonType("Salir");
 
@@ -41,13 +43,12 @@ public class AlertBox implements IAlertBox{
     /**
      * Create the human alert for the chooseColor in the game
      *
-     * @param title The alert title
      * @param header The alert header.
      */
-    public void chooseColor(String title, String header){
+    public void chooseColor(String header){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(title);
         alert.setHeaderText(header);
+        alert.initStyle(StageStyle.UNDECORATED);
 
         ButtonType amarillo = new ButtonType("Amarillo");
         ButtonType rojo = new ButtonType("Rojo");
@@ -74,8 +75,8 @@ public class AlertBox implements IAlertBox{
      */
     public void machineChooseColor(){
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Cambio de Color");
         alert.setHeaderText("La máquina eligió el color..");
+        alert.initStyle(StageStyle.UNDECORATED);
 
         int index = (int) (Math.random() * 4);
         switch (index){
@@ -108,10 +109,11 @@ public class AlertBox implements IAlertBox{
      */
     public void SingsUno(String header, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("¡Sang Uno!");
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.showAndWait();
+        alert.initStyle(StageStyle.UNDECORATED);
+
+        alertDelay(alert);
     }
 
     /**

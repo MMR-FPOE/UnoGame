@@ -129,9 +129,6 @@ public class GameUnoController implements Observer {
                         printCardsHumanPlayer();
                         printMachineCards();
 
-                        System.out.println("machine turn: " + machineTurn);
-                        System.out.println("player turn: " + humanTurn);
-                        System.out.println("Cartas en mazo: " + deck.deckLength());
                     }
                 });
                 this.gridPaneCardsPlayer.add(cardImageView, i, 0);
@@ -159,7 +156,7 @@ public class GameUnoController implements Observer {
      */
     private void changeColor(String header){
         AlertBox alertBox = new AlertBox();
-        alertBox.chooseColor("Cambio de Color", header);
+        alertBox.chooseColor(header);
         threadPlayMachine.setColor(alertBox.getColor());
     }
 
@@ -180,7 +177,6 @@ public class GameUnoController implements Observer {
             AlertBox alertBox = new AlertBox();
             alertBox.machineChooseColor();
             threadPlayMachine.setColor(alertBox.getColor());
-            System.out.println("color: " + color);
         }
     }
 
@@ -201,9 +197,9 @@ public class GameUnoController implements Observer {
     private void checkEmptyDeck(){
         if(!deck.isEmpty()){
             humanPlayer.addCard(deck.takeCard());
-            System.out.println("MAZO: " + deck.deckLength());
         } else {
-            System.out.println("MAZO VACIO");
+            AlertBox alertBox = new AlertBox();
+            alertBox.SingsUno("MAZO VACIO", "Las cartas de la tabla irán al mazo");
             table.cleanTableCards(deck);
         }
     }
@@ -237,10 +233,12 @@ public class GameUnoController implements Observer {
         if(machinePlayer.getCardsPlayer().isEmpty()){
             finishGame = true;
             machineTurn = false;
+            threadPlayMachine.stop();
             new AlertBox().WinOrLose("Perdiste", "El juego terminó", "La máquina te venció");
         } else if (humanPlayer.getCardsPlayer().isEmpty()) {
             finishGame = true;
             machineTurn = false;
+            printCardsHumanPlayer();
             new AlertBox().WinOrLose("Ganaste", "El juego terminó", "Venciste a la máquina");
         }
     }
@@ -278,6 +276,7 @@ public class GameUnoController implements Observer {
             checkEmptyDeck();
             if(this.humanPlayer.getArrayCardLength() >= 7){ this.posInitCardToShow = this.humanPlayer.getArrayCardLength() - 7; }
             printCardsHumanPlayer();
+            resetSetProtected();
         }
     }
 
@@ -295,7 +294,6 @@ public class GameUnoController implements Observer {
             new AlertBox().SingsUno("¡Cantaste Uno!", "La máquina come una carta");
             gameUno.haveSungOne("HUMAN_PLAYER");
             printMachineCards();
-            System.out.println("machine eats one card");
         }
     }
 
@@ -330,10 +328,10 @@ public class GameUnoController implements Observer {
      * Resets the isProtectedVariable
      */
     public void resetSetProtected(){
-        if(machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() == 2){
+        if(machinePlayer.getProtectedByUno() && machinePlayer.getCardsPlayer().size() > 1){
             machinePlayer.setProtectedByUno(false);
         }
-        if (humanPlayer.getProtectedByUno() && humanPlayer.getCardsPlayer().size() == 2){
+        if (humanPlayer.getProtectedByUno() && humanPlayer.getCardsPlayer().size() > 1){
             humanPlayer.setProtectedByUno(false);
         }
     }

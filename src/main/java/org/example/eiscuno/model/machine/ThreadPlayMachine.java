@@ -26,6 +26,8 @@ public class ThreadPlayMachine extends Thread {
     private GameUno gameUno;
     ThreadObservable observable = new ThreadObservable();
 
+    private volatile boolean running = true;
+
     /**
      * Constructs a new ThreadPlay instance.
      *
@@ -51,7 +53,7 @@ public class ThreadPlayMachine extends Thread {
      * Thread running method
      */
     public void run() {
-        while (true){
+        while (running){
             if(hasPlayerPlayed){
                 try{
                     Thread.sleep(2000);
@@ -94,7 +96,6 @@ public class ThreadPlayMachine extends Thread {
                         isPlayable.set(true);
                 }
                 if ((machinePlayer.getCardsPlayer().indexOf(card) == machinePlayer.getCardsPlayer().size() - 1) && !isPlayable.get()){
-                    System.out.println("no cards available");
                     gameUno.eatCard(machinePlayer, 1);
                     putCardOnTheTable();
                     break;
@@ -140,4 +141,5 @@ public class ThreadPlayMachine extends Thread {
         }
         return -1;
     }
+
 }

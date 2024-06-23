@@ -121,21 +121,12 @@ public class GameUno implements IGameUno {
             numberOfCards = 4;
         }
 
-        if(numberOfCards > 0){
-            System.out.println(player.getTypePlayer() + " have: " + player.getCardsPlayer().size() + " cards");
-        }
-
         if(numberOfCards > deck.deckLength()){
             table.cleanTableCards(deck);
         }
 
         for (int i = 0; i < numberOfCards; i++) {
             player.addCard(this.deck.takeCard());
-        }
-
-        if(numberOfCards > 0){
-            System.out.println(player.getTypePlayer() + " eat now: " + numberOfCards + " cards");
-            System.out.println(player.getTypePlayer() + " have now: " + player.getCardsPlayer().size() + " cards");
         }
     }
 
